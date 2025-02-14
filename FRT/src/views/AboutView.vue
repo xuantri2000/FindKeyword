@@ -1,8 +1,8 @@
-<template>
-  <div class="about">
-    
-  </div>
-</template>
+<script setup>
+</script>
 
-<style>
-</style>
+<template>
+	<section id="about">
+		
+	</section>
+</template>

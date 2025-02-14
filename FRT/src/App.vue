@@ -23,7 +23,9 @@ onMounted(() => {
 
 	<main class="page-content">
 		<h1 class="title">Search App</h1>
-		<RouterView />
+		<div class="container pt-2">
+			<RouterView />
+		</div>
 	</main>
 </div>
 </template>

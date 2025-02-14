@@ -29,7 +29,7 @@ $transition: $timing ease all;
 @import url("https://fonts.googleapis.com/css2?family=Open+Sans:wght@600&display=swap");
 
 body {
-  background: #eaeef6;
+//   background: #eaeef6;
   font-family: "Open Sans", sans-serif;
 }
 
@@ -40,8 +40,8 @@ body {
   background: #fff;
   border-radius: $borderRadius;
   padding: $spacer 0;
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.03);
-  height: calc(100vh - #{$spacer * 4});
+  box-shadow: 0 0 10px rgb(0 0 0 / 25%);
+  height: calc(100vh - #{$spacer * 2});
 
   &__link {
     position: relative;
@@ -65,6 +65,7 @@ body {
       padding: $spacer * 0.75;
       transition: $transition;
       border-radius: $borderRadius * 1.75;
+	  box-shadow: 0 0 10px rgb(0 0 0 / 25%);
     }
 
     &:hover {

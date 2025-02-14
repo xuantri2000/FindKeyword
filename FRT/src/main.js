@@ -1,13 +1,15 @@
-import './assets/main.css'
+import './assets/main.css';
 import "@/assets/bootstrap/css/bootstrap.css";
 import "@/assets/bootstrap/js/bootstrap.bundle.min.js";
 
-import { createApp } from 'vue'
-import App from './App.vue'
-import router from './router'
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from './router';
 
-const app = createApp(App)
+// Import Vue Toast Notification
+import 'vue-toast-notification/dist/theme-sugar.css';
 
-app.use(router)
+const app = createApp(App);
 
-app.mount('#app')
+app.use(router);
+app.mount("#app");

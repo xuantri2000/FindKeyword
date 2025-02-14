@@ -1,0 +1,4 @@
+.navbar__menu {
+	list-style: none;
+	padding: 0; /* Remove default margin */
+}

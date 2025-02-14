@@ -2,3 +2,20 @@
 	list-style: none;
 	padding: 0; /* Remove default margin */
 }
+
+/* .layout{
+	display: flex;
+}
+
+.navbar{
+	width: fit-content;
+} */
+
+.page-content{
+	padding-top: 1rem;
+    padding-left: 8rem;
+}
+
+.title{
+	text-align: center;
+}

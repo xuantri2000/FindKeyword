@@ -9,20 +9,21 @@ onMounted(() => {
 </script>
 
 <template>
-  <header>
+<div class="layout">
 	<nav class="navbar">
 		<ul class="navbar__menu">
 			<li class="navbar__item">
 				<RouterLink class="navbar__link" to="/"><i data-feather="home"></i><span>Home</span></RouterLink>
 			</li>
 			<li class="navbar__item">
-				<RouterLink class="navbar__link" to="/about"><i data-feather="message-square"></i><span>About</span></RouterLink>        
+				<RouterLink class="navbar__link" to="/about"><i data-feather="message-square"></i><span>Blacklist</span></RouterLink>        
 			</li>
 		</ul>
 	</nav>
-  </header>
 
-  <main class="page-content">
-	<RouterView />
-  </main>
+	<main class="page-content">
+		<h1 class="title">Search App</h1>
+		<RouterView />
+	</main>
+</div>
 </template>

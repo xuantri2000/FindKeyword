@@ -4,6 +4,7 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 
 const recordRoutes = require("./routes/recordRoutes");
+const logRoutes = require("./routes/logRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -24,6 +25,7 @@ mongoose.connect(MONGO_URI, {
 
 // Sử dụng routes
 app.use("/records", recordRoutes);
+app.use("/logs", logRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

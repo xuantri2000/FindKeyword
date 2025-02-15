@@ -88,18 +88,37 @@ router.post("/insert", async (req, res) => {
     }
 });
 
-// 📌 Route: Lấy tất cả record
-router.get("/select", async (req, res) => {
+// 📌 Route: Lấy records theo trang (Pagination)
+router.get("/", async (req, res) => {
     try {
-        const records = await Record.find();
-        res.status(200).json(records);
+        // Lấy `page` và `limit` từ query parameters, mặc định là page 1, 100 records mỗi trang
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 100;
+
+        // Tính vị trí bắt đầu (skip)
+        const skip = (page - 1) * limit;
+
+        // Lấy dữ liệu có phân trang
+        const records = await Record.find()
+            .sort({ _id: -1 }) // Lấy những record mới nhất trước
+            .skip(skip) // Bỏ qua `skip` bản ghi đầu tiên
+            .limit(limit); // Giới hạn `limit` records mỗi trang
+
+        // Tổng số records trong DB
+        const totalRecords = await Record.countDocuments();
+
+        // Trả về dữ liệu kèm thông tin phân trang
+        res.status(200).json({
+            page,
+            limit,
+            totalRecords,
+            totalPages: Math.ceil(totalRecords / limit),
+            data: records,
+        });
     } catch (error) {
         res.status(500).json({ error: "Error fetching records", details: error.message });
     }
 });
 
-// router.get("/test", async (req, res) => { 
-//     res.json({ message: "Welcome to Node.js 2API" });
-// });
 
 module.exports = router;

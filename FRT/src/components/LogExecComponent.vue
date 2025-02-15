@@ -79,6 +79,9 @@ const handleProcessFiles = () => {
 				$toast.error("Lỗi kết nối đến API!");
 			}
 		}).finally(() => {
+			selectedFiles.value.clear();
+    		checkAll.value = false;
+
 			fetchLogs();
 			fetchFailedLogs();
 		});;
@@ -107,32 +110,41 @@ onMounted(async () => {
 				</label>
 			</li>
 		</ul>
-		<!-- Nút xử lý -->
-		<button class="process-btn" @click="handleProcessFiles">Xử lý</button>
 	</div>
+	<!-- Nút xử lý -->
+	<button class="process-btn" @click="handleProcessFiles">Xử lý tệp tin</button>
 	<hr>
 	<!-- Hiển thị danh sách Log lỗi -->
 	<h5 class="sub-title">Log lỗi</h5>
-	<table class="table table-striped">
-		<thead>
-			<tr>
-				<th>#</th>
-				<th>Tên File</th>
-				<th>Thời gian chạy</th>
-			</tr>
-		</thead>
-		<tbody>
-			<tr v-for="(file, index) in failedFiles" :key="file">
-				<td>{{ index + 1 }}</td>
-				<td>{{ file.filename }}</td>
-				<td>{{ file.created_at }}</td>
-			</tr>
-		</tbody>
-	</table>
+	<div class="error-log-table">
+		<table class="table table-striped ">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Tên File</th>
+					<th>Thời gian chạy</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr v-for="(file, index) in failedFiles" :key="file">
+					<td>{{ index + 1 }}</td>
+					<td>{{ file.filename }}</td>
+					<td>{{ file.created_at }}</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
 </template>
 <style scoped>
 /* Layout tổng thể */
+.error-log-table{
+	overflow-y: auto;
+	max-height: 38vh;
+}
+
 .file-list {
+	overflow-y: auto;
+	max-height: 30vh;
 	margin-top: 10px;
 	background: #f8f9fa;
 	padding: 15px;

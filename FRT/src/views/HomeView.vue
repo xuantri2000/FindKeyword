@@ -104,7 +104,7 @@ onMounted(fetchLogs);
     background: #f8f9fa;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
 }
 
 /* Hiển thị cấu trúc thư mục */

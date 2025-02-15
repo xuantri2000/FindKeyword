@@ -23,4 +23,7 @@ export default defineConfig({
             },
         },
     },
+	optimizeDeps: {
+		include: ["vue-good-table-next"]
+	}
 })

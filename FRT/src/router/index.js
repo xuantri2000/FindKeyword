@@ -1,7 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
 
-const appName = 'Công cụ tìm kiếm tải khoản lộ lọt';
+const appName = 'Công cụ tìm kiếm tài khoản lộ lọt';
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [

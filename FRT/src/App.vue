@@ -1,5 +1,6 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router';
+import Logo from '@/components/Logo.vue';
 import feather from 'feather-icons';
 import { onMounted } from 'vue';
 
@@ -22,7 +23,9 @@ onMounted(() => {
 	</nav>
 
 	<main class="page-content">
-		<h1 class="title">Search App</h1>
+		<div class="title-section">
+			<h1 class="title"><Logo></Logo> Công cụ tìm kiếm tải khoản lộ lọt</h1>
+		</div>
 		<div class="container pt-2">
 			<RouterView />
 		</div>

@@ -45,7 +45,7 @@ def search_in_files():
                                     "url_path": url_path,
                                     "username": username,
                                     "password": password,
-                                    "current_time": current_time
+                                    "run_time": current_time
                                 }
 
                                 print(json.dumps(result, ensure_ascii=False, indent=2))  # Hiển thị dưới dạng JSON

@@ -81,6 +81,7 @@ body {
 	padding: $spacer 0;
 	box-shadow: 0 0 10px rgb(0 0 0 / 25%);
 	height: calc(100vh - #{$spacer * 2});
+	z-index: 9999;
 
 	&__link {
 		position: relative;

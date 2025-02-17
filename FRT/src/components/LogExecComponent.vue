@@ -122,7 +122,7 @@ onMounted(async () => {
 				<tr>
 					<th>#</th>
 					<th>Tên File</th>
-					<th>Thời gian chạy</th>
+					<th>Thời gian</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -139,12 +139,12 @@ onMounted(async () => {
 /* Layout tổng thể */
 .error-log-table{
 	overflow-y: auto;
-	max-height: 38vh;
+	max-height: 30vh;
 }
 
 .file-list {
 	overflow-y: auto;
-	max-height: 30vh;
+	max-height: 50vh;
 	margin-top: 10px;
 	background: #f8f9fa;
 	padding: 15px;
@@ -155,7 +155,7 @@ onMounted(async () => {
 /* Hiển thị cấu trúc thư mục */
 .directory-structure {
 	list-style: none;
-	padding-left: 20px;
+	padding-left: 10px;
 }
 
 .directory-structure label {

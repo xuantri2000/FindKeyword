@@ -514,7 +514,7 @@ table.vgt-table tr.clickable:hover {
   vertical-align: middle;
 }
 .vgt-wrap__footer .footer__navigation__page-info__current-entry {
-  width: 30px;
+  width: 60px;
   text-align: center;
   vertical-align: middle;
   display: inline-block;

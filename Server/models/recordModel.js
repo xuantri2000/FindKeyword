@@ -6,6 +6,7 @@ const recordSchema = new mongoose.Schema({
     url_path: { type: String, required: true },
     filename: { type: String },
     run_time: { type: String },
+    log_resource: { type: String },
 });
 
 // Đảm bảo rằng `username` và `password` kết hợp là duy nhất

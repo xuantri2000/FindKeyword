@@ -50,6 +50,7 @@ router.post("/insert", async (req, res) => {
                                     url_path: record.url_path,
                                     filename: filename,
                                     run_time: record.run_time,
+                                    log_resource: record.filename,
                                 },
                             },
                             upsert: true,
@@ -88,26 +89,20 @@ router.post("/insert", async (req, res) => {
     }
 });
 
-// 📌 Route: Lấy records theo trang (Pagination)
 router.get("/", async (req, res) => {
     try {
-        // Lấy `page` và `limit` từ query parameters, mặc định là page 1, 100 records mỗi trang
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 100;
+        const limit = parseInt(req.query.limit) || 50; // Mặc định lấy 50 records/lần
 
-        // Tính vị trí bắt đầu (skip)
         const skip = (page - 1) * limit;
 
-        // Lấy dữ liệu có phân trang
         const records = await Record.find()
-            .sort({ _id: -1 }) // Lấy những record mới nhất trước
-            .skip(skip) // Bỏ qua `skip` bản ghi đầu tiên
-            .limit(limit); // Giới hạn `limit` records mỗi trang
+            .sort({ _id: -1 })
+            .skip(skip)
+            .limit(limit);
 
-        // Tổng số records trong DB
         const totalRecords = await Record.countDocuments();
 
-        // Trả về dữ liệu kèm thông tin phân trang
         res.status(200).json({
             page,
             limit,
@@ -119,6 +114,7 @@ router.get("/", async (req, res) => {
         res.status(500).json({ error: "Error fetching records", details: error.message });
     }
 });
+
 
 
 module.exports = router;

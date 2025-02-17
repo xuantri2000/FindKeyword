@@ -70,7 +70,7 @@ table.vgt-table {
   border: 1px solid #DCDFE6;
 }
 table.vgt-table td {
-  padding: 0.75em 0.75em 0.75em 0.75em;
+  padding: 0.3em;
   /* vertical-align: top; */
   border-bottom: 1px solid #DCDFE6;
   color: #606266;
@@ -80,7 +80,7 @@ table.vgt-table td {
     color: #758697;
 } */
 table.vgt-table td:nth-child(1) {
-    text-align: center
+    /* text-align: center */
 }
 table.vgt-table tr.clickable {
   cursor: pointer;

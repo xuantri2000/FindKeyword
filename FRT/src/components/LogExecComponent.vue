@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted, watch, defineEmits  } from "vue";
 import $toast from '@/utils/VueToast';
 import axios from 'axios';
 
+const emit = defineEmits(["process-complete"]);
 // Danh sách file từ API
 const files = ref([]); // Chứa danh sách file từ API
 const selectedFiles = ref(new Set()); // Chứa danh sách file đã chọn
@@ -84,6 +85,8 @@ const handleProcessFiles = () => {
 
 			fetchLogs();
 			fetchFailedLogs();
+
+			emit("process-complete");
 		});;
 };
 

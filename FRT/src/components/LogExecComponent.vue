@@ -9,6 +9,7 @@ const files = ref([]); // Chứa danh sách file từ API
 const selectedFiles = ref(new Set()); // Chứa danh sách file đã chọn
 const checkAll = ref(false); // Trạng thái của checkbox "Chọn tất cả"
 const failedFiles = ref([]); // Chứa danh sách file từ API
+const isUserToggleCheckAll = ref(false);
 
 const fetchLogs = async () => {
 	try {
@@ -30,8 +31,17 @@ const fetchFailedLogs = async () => {
 
 // Theo dõi thay đổi của checkAll để cập nhật selectedFiles
 watch(checkAll, (newValue) => {
-	selectedFiles.value = newValue ? new Set(files.value) : new Set();
+    if (isUserToggleCheckAll.value) {
+        selectedFiles.value = newValue ? new Set(files.value) : new Set();
+    }
+    isUserToggleCheckAll.value = false;
 });
+
+// Thêm handler riêng cho nút checkAll
+const handleCheckAll = (event) => {
+    isUserToggleCheckAll.value = true;
+    checkAll.value = event.target.checked;
+};
 
 // Chọn/bỏ chọn 1 file
 const toggleFileSelection = (file) => {
@@ -64,6 +74,12 @@ const handleProcessFiles = () => {
 			if (response.data.errors && response.data.errors.length > 0) {
 				$toast.error(response.data.errors.join("<br>"));
 			}
+
+			//Kiểm tra có records thì emit
+			if(response.data.record > 0)
+			{
+				emit("process-complete");
+			}
 		})
 		.catch((error) => {
 			if (error.response) {
@@ -85,8 +101,6 @@ const handleProcessFiles = () => {
 
 			fetchLogs();
 			fetchFailedLogs();
-
-			emit("process-complete");
 		});;
 };
 
@@ -100,7 +114,10 @@ onMounted(async () => {
 	<div class="file-list">
 		<!-- Nút Chọn Tất Cả -->
 		<div class="check-all">
-			<input type="checkbox" v-model="checkAll" id="checkAll" />
+			<input type="checkbox" 
+			:checked="checkAll" 
+			@change="handleCheckAll" 
+			id="checkAll" />
 			<label for="checkAll">📂 Chọn tất cả</label>
 		</div>
 

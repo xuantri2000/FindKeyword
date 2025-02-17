@@ -81,6 +81,7 @@ router.post("/insert", async (req, res) => {
         res.status(201).json({
             message: `Thêm thành công ${upSertRecords.upsertedCount} tài khoản mới!`,
             errors: errorMessages.length ? errorMessages : null,
+			record: upSertRecords.upsertedCount
         });
 
     } catch (error) {

@@ -91,10 +91,10 @@ router.post("/insert", async (req, res) => {
 
 router.get("/", async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1;
+        const batch = parseInt(req.query.batch) || 1;
         const limit = parseInt(req.query.limit) || 50; // Mặc định lấy 50 records/lần
 
-        const skip = (page - 1) * limit;
+        const skip = (batch - 1) * limit;
 
         const records = await Record.find()
             .sort({ _id: -1 })
@@ -104,7 +104,7 @@ router.get("/", async (req, res) => {
         const totalRecords = await Record.countDocuments();
 
         res.status(200).json({
-            page,
+            batch,
             limit,
             totalRecords,
             totalPages: Math.ceil(totalRecords / limit),

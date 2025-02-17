@@ -9,14 +9,14 @@ const displayRecords = ref([]); // Mảng hiển thị trên giao diện
 const loading = ref(false);
 const currentPage = ref(1);
 const totalPages = ref(1);
-const itemsPerPage = 25;
-const batchSize = import.meta.env.VITE_BATCH_SIZE;
+const itemsPerPage = parseInt(import.meta.env.VITE_PER_PAGE);
+const batchSize = parseInt(import.meta.env.VITE_BATCH_SIZE);
 const totalRecords = ref(1);
 
-const fetchLogs = async (page) => {
+const fetchLogs = async (batch) => {
     loading.value = true;
     try {
-        const response = await axios.get(`/api/records?page=${page}&limit=${batchSize}`);
+        const response = await axios.get(`/api/records?batch=${batch}&limit=${batchSize}`);
         
         if (response.data.data.length > 0) {
             records.value = [...records.value, ...response.data.data]; // Append records thay vì ghi đè

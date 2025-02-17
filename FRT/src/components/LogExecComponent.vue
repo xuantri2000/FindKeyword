@@ -2,6 +2,7 @@
 import { ref, onMounted, watch, defineEmits  } from "vue";
 import $toast from '@/utils/VueToast';
 import axios from 'axios';
+import FileListSkeleton from "@/components/FileListSkeleton.vue";
 
 const emit = defineEmits(["process-complete"]);
 // Danh sách file từ API
@@ -10,23 +11,29 @@ const selectedFiles = ref(new Set()); // Chứa danh sách file đã chọn
 const checkAll = ref(false); // Trạng thái của checkbox "Chọn tất cả"
 const failedFiles = ref([]); // Chứa danh sách file từ API
 const isUserToggleCheckAll = ref(false);
+const loadingLogs = ref(false);
+const loadingFailedLogs = ref(false);
 
 const fetchLogs = async () => {
+	loadingLogs.value = true;
 	try {
 		const response = await axios.get("/api/logs/");
 		files.value = response.data.newJsonFiles;
 	} catch (error) {
 		console.error("Lỗi khi fetch API:", error);
 	}
+	loadingLogs.value = false;
 };
 
 const fetchFailedLogs = async () => {
+	loadingFailedLogs.value = true;
 	try {
 		const response = await axios.get("/api/logs/errors");
 		failedFiles.value = response.data.failedJsonFiles;
 	} catch (error) {
 		console.error("Lỗi khi fetch API:", error);
 	}
+	loadingFailedLogs.value = false;
 };
 
 // Theo dõi thay đổi của checkAll để cập nhật selectedFiles
@@ -62,8 +69,7 @@ const handleProcessFiles = () => {
 		return;
 	}
 
-	console.log("Đang xử lý các file:", Array.from(selectedFiles.value));
-
+	loadingLogs.value = true;
 	// 🚀 TODO: Gửi danh sách file đã chọn lên backend để xử lý
 	axios.post("/api/records/insert", Array.from(selectedFiles.value))
 		.then((response) => {
@@ -98,6 +104,7 @@ const handleProcessFiles = () => {
 		}).finally(() => {
 			selectedFiles.value.clear();
     		checkAll.value = false;
+			loadingLogs.value = false;
 
 			fetchLogs();
 			fetchFailedLogs();
@@ -111,7 +118,8 @@ onMounted(async () => {
 
 <template>
 	<h5 class="sub-title">Log chưa xử lý</h5>
-	<div class="file-list">
+	<FileListSkeleton v-if="loadingLogs"></FileListSkeleton>
+	<div class="file-list" v-else>
 		<!-- Nút Chọn Tất Cả -->
 		<div class="check-all">
 			<input type="checkbox" 
@@ -136,7 +144,8 @@ onMounted(async () => {
 	<hr>
 	<!-- Hiển thị danh sách Log lỗi -->
 	<h5 class="sub-title">Log lỗi</h5>
-	<div class="error-log-table">
+	<FileListSkeleton v-if="loadingFailedLogs"></FileListSkeleton>
+	<div class="error-log-table" v-else>
 		<table class="table table-striped ">
 			<thead>
 				<tr>

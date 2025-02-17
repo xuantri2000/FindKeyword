@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import $toast from "@/utils/VueToast";
 import LogExecComponent from "@/components/LogExecComponent.vue";
+import TableSkeleton from "@/components/TableSkeleton.vue";
 
 const records = ref([]);
 const displayRecords = ref([]);
@@ -88,7 +89,9 @@ onMounted(async () => {
         <div class="row">
             <div class="col-md-8">
                 <h5 class="sub-title">Tìm kiếm tài khoản lộ lọt</h5>
+				<TableSkeleton v-show="loading"></TableSkeleton>
                 <vue-good-table
+					v-show="!loading"
                     :key="tableKey"
                     :columns="[
                         { label: 'Tài khoản', field: 'username', sortable: false },

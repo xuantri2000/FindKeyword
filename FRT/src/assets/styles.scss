@@ -48,7 +48,7 @@ body {
 			content: '';
 			position: absolute;
 			left: 0;
-			height: 60%;
+			height: 70%;
 			width: 3px;
 			background: $primary;
 			border-radius: 0 $borderRadius $borderRadius 0;
@@ -60,15 +60,15 @@ body {
 
 @keyframes gentleMove {
 	0% {
-		transform: translateY(20%);
+		transform: translateY(30%);
 	}
 
 	50% {
-		transform: translateY(-20%);
+		transform: translateY(-30%);
 	}
 
 	100% {
-		transform: translateY(20%);
+		transform: translateY(30%);
 	}
 }
 

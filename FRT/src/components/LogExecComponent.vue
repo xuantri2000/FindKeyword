@@ -2,7 +2,7 @@
 import { ref, onMounted, watch, defineEmits  } from "vue";
 import $toast from '@/utils/VueToast';
 import axios from 'axios';
-import FileListSkeleton from "@/components/FileListSkeleton.vue";
+import FileListSkeleton from "@/components/ui/FileListSkeleton.vue";
 
 const emit = defineEmits(["process-complete"]);
 // Danh sách file từ API
@@ -169,6 +169,8 @@ onMounted(async () => {
 .error-log-table{
 	overflow-y: auto;
 	max-height: 30vh;
+	border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
 }
 
 .file-list {

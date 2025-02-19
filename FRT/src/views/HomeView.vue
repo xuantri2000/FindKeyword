@@ -3,7 +3,7 @@ import { ref, computed, onMounted } from "vue";
 import axios from "axios";
 import $toast from "@/utils/VueToast";
 import LogExecComponent from "@/components/LogExecComponent.vue";
-import TableSkeleton from "@/components/TableSkeleton.vue";
+import TableSkeleton from "@/components/ui/TableSkeleton.vue";
 
 const records = ref([]);
 const displayRecords = ref([]);

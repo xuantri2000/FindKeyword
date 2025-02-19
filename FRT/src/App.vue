@@ -1,6 +1,6 @@
 <script setup>
 import { RouterLink, RouterView } from 'vue-router';
-import Logo from '@/components/Logo.vue';
+import Logo from '@/components/ui/Logo.vue';
 import feather from 'feather-icons';
 import { onMounted } from 'vue';
 

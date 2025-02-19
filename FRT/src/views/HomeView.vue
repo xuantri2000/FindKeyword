@@ -113,7 +113,7 @@ onMounted(async () => {
                         perPageDropdownEnabled: false,
                         nextLabel: 'Sau',
                         prevLabel: 'Trước',
-                        pageLabel: '',
+                        pageLabel: 'Trang',
 						ofLabel: 'của',
                         mode: 'pages',
                     }"

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, defineEmits  } from "vue";
+import { ref, onMounted, watch, defineEmits, onUpdated  } from "vue";
 import $toast from '@/utils/VueToast';
 import axios from 'axios';
 import FileListSkeleton from "@/components/ui/FileListSkeleton.vue";
@@ -134,110 +134,140 @@ onMounted(async () => {
 				<label>
 					<input type="checkbox" :checked="selectedFiles.has(file)"
 						@change="toggleFileSelection(file)" />
-					<span class="file-icon ps-2">📄</span> {{ file }}
+					<span class="file-icon">📄</span> {{ file }}
 				</label>
 			</li>
 		</ul>
 	</div>
 	<!-- Nút xử lý -->
 	<button class="process-btn" @click="handleProcessFiles">Xử lý tệp tin</button>
-	<hr>
-	<!-- Hiển thị danh sách Log lỗi -->
-	<h5 class="sub-title">Log lỗi</h5>
-	<FileListSkeleton v-if="loadingFailedLogs"></FileListSkeleton>
-	<div class="error-log-table" v-else>
-		<table class="table table-striped ">
-			<thead>
-				<tr>
-					<th>#</th>
-					<th>Tên File</th>
-					<!-- <th>Thời gian</th> -->
-				</tr>
-			</thead>
-			<tbody>
-				<tr v-for="(file, index) in failedFiles" :key="file">
-					<td>{{ index + 1 }}</td>
-					<td>{{ file.filename }} <br> <small><i>{{ file.created_at }}</i></small></td>
-				</tr>
-			</tbody>
-		</table>
+	<div v-if="failedFiles.length > 0">
+		<hr>
+		<!-- Hiển thị danh sách Log lỗi -->
+		<h5 class="sub-title">Log lỗi</h5>
+		<FileListSkeleton v-if="loadingFailedLogs"></FileListSkeleton>
+		<div class="error-log-table" v-else>
+			<table class="table table-striped ">
+				<thead>
+					<tr>
+						<th>#</th>
+						<th>Tên File</th>
+						<!-- <th>Thời gian</th> -->
+					</tr>
+				</thead>
+				<tbody>
+					<tr v-for="(file, index) in failedFiles" :key="file">
+						<td>{{ index + 1 }}</td>
+						<td>{{ file.filename }} <br> <small><i>{{ file.created_at }}</i></small></td>
+					</tr>
+				</tbody>
+			</table>
+		</div>
 	</div>
 </template>
 <style scoped>
 /* Layout tổng thể */
-.error-log-table{
-	overflow-y: auto;
-	max-height: 30vh;
-	border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
-}
-
+/* Tổng thể của danh sách file */
 .file-list {
-	overflow-y: auto;
-	max-height: 50vh;
-	margin-top: 10px;
-	background: #f8f9fa;
-	padding: 15px;
-	border-radius: 8px;
-	box-shadow: 0 0 10px rgba(0, 0, 0, 0.25);
+    overflow-y: auto;
+    max-height: 50vh;
+    margin-top: 10px;
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border: 1px solid #ddd;
 }
 
-/* Hiển thị cấu trúc thư mục */
-.directory-structure {
-	list-style: none;
-	padding-left: 10px;
-}
-
-.directory-structure label {
-	cursor: pointer;
-}
-
-/* Kiểu file item */
-.file-item {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 8px 10px;
-	border-radius: 5px;
-	transition: background 0.2s;
-	cursor: pointer;
-}
-
-.file-item:hover {
-	background: rgba(0, 123, 255, 0.1);
-}
-
-/* Biểu tượng file */
-.file-icon {
-	font-size: 1.2em;
-}
-
-/* Check All */
+/* Check All - Chọn tất cả */
 .check-all {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: bold;
+    font-size: 14px;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer !important;
 }
 
 .check-all label {
-	cursor: pointer;
+	width: 100%;
+    cursor: pointer !important;
 }
 
-/* Nút Xử lý */
+.check-all input {
+    width: 16px;
+    height: 16px;
+    accent-color: #28a745; /* Màu xanh lá giống nút xử lý */
+}
+
+/* Danh sách tệp */
+.directory-structure {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0px;
+}
+
+.file-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 20px;
+    border-radius: 6px;
+    transition: background 0.2s, transform 0.1s;
+    font-size: 14px;
+}
+
+.file-item label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+    cursor: pointer;
+}
+
+/* Checkbox */
+.file-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #28a745;
+}
+
+/* Hiệu ứng hover */
+.file-item:hover {
+    background: rgba(40, 167, 69, 0.1); /* Nhẹ nhàng xanh lá */
+    transform: scale(1.02);
+}
+
+/* Biểu tượng file */
+.file-icon i {
+    font-size: 16px;
+    color: #555;
+    transition: color 0.2s;
+}
+
+/* Nút xử lý */
 .process-btn {
-	margin-top: 10px;
-	padding: 8px 15px;
-	background-color: #28a745;
-	color: white;
-	border: none;
-	cursor: pointer;
-	border-radius: 5px;
-	font-size: 14px;
-	transition: background 0.2s;
+    margin-top: 15px;
+    padding: 10px 15px;
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: background 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .process-btn:hover {
-	background-color: #218838;
+    background-color: #218838;
+    transform: scale(1.05);
 }
+
+
 </style>

@@ -111,11 +111,11 @@ onMounted(async () => {
                         enabled: true,
                         perPage: itemsPerPage,
                         perPageDropdownEnabled: false,
-                        jumpFirstOrLast: true,
                         nextLabel: 'Sau',
                         prevLabel: 'Trước',
-                        pageLabel: 'Trang',
-                        mode: 'pages'
+                        pageLabel: '',
+						ofLabel: 'của',
+                        mode: 'pages',
                     }"
                     @page-change="changePage"
                 ></vue-good-table>

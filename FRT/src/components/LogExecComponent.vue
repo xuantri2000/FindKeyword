@@ -151,14 +151,13 @@ onMounted(async () => {
 				<tr>
 					<th>#</th>
 					<th>Tên File</th>
-					<th>Thời gian</th>
+					<!-- <th>Thời gian</th> -->
 				</tr>
 			</thead>
 			<tbody>
 				<tr v-for="(file, index) in failedFiles" :key="file">
 					<td>{{ index + 1 }}</td>
-					<td>{{ file.filename }}</td>
-					<td>{{ file.created_at }}</td>
+					<td>{{ file.filename }} <br> <small><i>{{ file.created_at }}</i></small></td>
 				</tr>
 			</tbody>
 		</table>

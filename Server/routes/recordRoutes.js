@@ -108,7 +108,7 @@ router.get("/", async (req, res) => {
             batch,
             limit,
             totalRecords,
-            totalPages: Math.ceil(totalRecords / limit),
+            totalBatches: Math.ceil(totalRecords / limit),
             data: records,
         });
     } catch (error) {

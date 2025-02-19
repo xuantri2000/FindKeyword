@@ -14,18 +14,29 @@ const itemsPerPage = parseInt(import.meta.env.VITE_PER_PAGE);
 const batchSize = parseInt(import.meta.env.VITE_BATCH_SIZE);
 const totalRecords = ref(1);
 const tableKey = ref(0);
+const loadedBatches = ref(new Set()); // Theo dõi các batch đã load
 
 const fetchLogs = async (batch) => {
+    if (loadedBatches.value.has(batch)) {
+        return true; // Batch đã được load
+    }
+
     loading.value = true;
     try {
         const response = await axios.get(`/api/records?batch=${batch}&limit=${batchSize}`);
         
         if (response.data.data.length > 0) {
-            if (batch === 1) {
-                records.value = response.data.data;
-            } else {
-                records.value = [...records.value, ...response.data.data];
+            // Tính toán vị trí chèn cho batch mới
+            const insertIndex = (batch - 1) * batchSize;
+            
+            // Mở rộng mảng records nếu cần
+            if (insertIndex > records.value.length) {
+                records.value.length = insertIndex;
             }
+            
+            // Chèn dữ liệu mới vào đúng vị trí
+            records.value.splice(insertIndex, response.data.data.length, ...response.data.data);
+            loadedBatches.value.add(batch);
         }
 
         totalRecords.value = response.data.totalRecords;
@@ -47,7 +58,6 @@ const updateDisplayRecords = (pageNumber) => {
 };
 
 const changePage = async (newPage) => {
-    // Extract the page number regardless of event format
     const pageNumber = typeof newPage === 'object' ? newPage.currentPage : parseInt(newPage);
     
     if (!pageNumber || pageNumber < 1) {
@@ -56,15 +66,10 @@ const changePage = async (newPage) => {
 
     const startIndex = (pageNumber - 1) * itemsPerPage;
     const requiredBatch = Math.floor(startIndex / batchSize) + 1;
-    const currentLastBatch = Math.ceil(records.value.length / batchSize);
 
-    // Check if we need to fetch more data
-    if (requiredBatch > currentLastBatch && records.value.length < totalRecords.value) {
-        // Fetch all missing batches sequentially
-        for (let batch = currentLastBatch + 1; batch <= requiredBatch; batch++) {
-            const hasNewData = await fetchLogs(batch);
-            if (!hasNewData) break;
-        }
+    // Chỉ fetch batch cần thiết
+    if (!loadedBatches.value.has(requiredBatch) && startIndex < totalRecords.value) {
+        await fetchLogs(requiredBatch);
     }
     
     updateDisplayRecords(pageNumber);
@@ -74,6 +79,7 @@ const changePage = async (newPage) => {
 const handleProcessComplete = async () => {
     currentPage.value = 1;
     tableKey.value += 1;
+    loadedBatches.value.clear(); // Reset loaded batches
     await fetchLogs(1);
     updateDisplayRecords(1);
 };

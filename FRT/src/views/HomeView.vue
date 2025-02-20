@@ -4,6 +4,7 @@ import axios from "axios";
 import $toast from "@/utils/VueToast";
 import LogExecComponent from "@/components/LogExecComponent.vue";
 import TableSkeleton from "@/components/ui/TableSkeleton.vue";
+import CustomPagination from "@/components/ui/CustomPagination.vue";
 
 const records = ref([]);
 const displayRecords = ref([]);
@@ -14,33 +15,26 @@ const itemsPerPage = parseInt(import.meta.env.VITE_PER_PAGE);
 const batchSize = parseInt(import.meta.env.VITE_BATCH_SIZE);
 const totalRecords = ref(1);
 const tableKey = ref(0);
-const loadedBatches = ref(new Set()); // Theo dõi các batch đã load
+const loadedBatches = ref(new Set());
 
 const fetchLogs = async (batch) => {
-    if (loadedBatches.value.has(batch)) {
-        return true; // Batch đã được load
-    }
+    if (loadedBatches.value.has(batch)) return true;
 
     loading.value = true;
     try {
         const response = await axios.get(`/api/records?batch=${batch}&limit=${batchSize}`);
         
         if (response.data.data.length > 0) {
-            // Tính toán vị trí chèn cho batch mới
             const insertIndex = (batch - 1) * batchSize;
-            
-            // Mở rộng mảng records nếu cần
             if (insertIndex > records.value.length) {
                 records.value.length = insertIndex;
             }
-            
-            // Chèn dữ liệu mới vào đúng vị trí
             records.value.splice(insertIndex, response.data.data.length, ...response.data.data);
             loadedBatches.value.add(batch);
         }
 
         totalRecords.value = response.data.totalRecords;
-        totalPages.value = Math.ceil(response.data.totalRecords / itemsPerPage);
+        totalPages.value = Math.ceil(totalRecords.value / itemsPerPage);
         
         return response.data.data.length > 0;
     } catch (error) {
@@ -58,28 +52,23 @@ const updateDisplayRecords = (pageNumber) => {
 };
 
 const changePage = async (newPage) => {
-    const pageNumber = typeof newPage === 'object' ? newPage.currentPage : parseInt(newPage);
-    
-    if (!pageNumber || pageNumber < 1) {
-        return;
-    }
+    if (!newPage || newPage < 1 || newPage > totalPages.value) return;
+    currentPage.value = newPage;
 
-    const startIndex = (pageNumber - 1) * itemsPerPage;
+    const startIndex = (newPage - 1) * itemsPerPage;
     const requiredBatch = Math.floor(startIndex / batchSize) + 1;
 
-    // Chỉ fetch batch cần thiết
     if (!loadedBatches.value.has(requiredBatch) && startIndex < totalRecords.value) {
         await fetchLogs(requiredBatch);
     }
     
-    updateDisplayRecords(pageNumber);
-    currentPage.value = pageNumber;
+    updateDisplayRecords(newPage);
 };
 
 const handleProcessComplete = async () => {
     currentPage.value = 1;
     tableKey.value += 1;
-    loadedBatches.value.clear(); // Reset loaded batches
+    loadedBatches.value.clear();
     await fetchLogs(1);
     updateDisplayRecords(1);
 };
@@ -111,14 +100,18 @@ onMounted(async () => {
                         enabled: true,
                         perPage: itemsPerPage,
                         perPageDropdownEnabled: false,
-                        nextLabel: 'Sau',
-                        prevLabel: 'Trước',
-                        pageLabel: 'Trang',
-						ofLabel: 'của',
-                        mode: 'pages',
                     }"
-                    @page-change="changePage"
-                ></vue-good-table>
+                >
+                  <!-- 📌 Ghi đè pagination -->
+                  <template #pagination-bottom>
+                    <CustomPagination 
+                      :total-records="totalRecords" 
+                      :total-pages="totalPages"
+                      :current-page="currentPage"
+                      @change-page="changePage"
+                    />
+                  </template>
+                </vue-good-table>
             </div>
             <div class="col-md-4">
                 <LogExecComponent @process-complete="handleProcessComplete"/>

@@ -110,6 +110,7 @@ router.get("/", async (req, res) => {
             totalRecords,
             totalBatches: Math.ceil(totalRecords / limit),
             data: records,
+            totalRecordsInCurrentBatch: records.length,
         });
     } catch (error) {
         res.status(500).json({ error: "Error fetching records", details: error.message });

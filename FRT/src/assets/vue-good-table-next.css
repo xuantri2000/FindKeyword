@@ -77,10 +77,17 @@ table.vgt-table td {
 	color: #606266;
 }
 
-/* #vgt-table>tbody>tr:nth-of-type(odd){
+table.vgt-table td.url-path {
+	max-width: 300px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+#vgt-table>tbody>tr:nth-of-type(odd){
     background: rgba(0,0,0,0.05);
     color: #758697;
-} */
+}
 table.vgt-table td:nth-child(1) {
 	/* text-align: center */
 }

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, watch } from "vue";
 import axios from "axios";
 import $toast from "@/utils/VueToast";
 import LogExecComponent from "@/components/LogExecComponent.vue";
@@ -16,13 +16,25 @@ const batchSize = parseInt(import.meta.env.VITE_BATCH_SIZE);
 const totalRecords = ref(1);
 const tableKey = ref(0);
 const loadedBatches = ref(new Set());
+const searchQuery = ref("");
+const searchTimer = ref(null);
+const sortField = ref("");
+const sortOrder = ref(""); // "asc" or "desc"
 
-const fetchLogs = async (batch) => {
-    if (loadedBatches.value.has(batch)) return true;
+const fetchLogs = async (batch, query = "") => {
+    if (loadedBatches.value.has(batch) && query === "" && !sortField.value) return true;
 
     loading.value = true;
     try {
-        const response = await axios.get(`/api/records?batch=${batch}&limit=${batchSize}`);
+        const response = await axios.get(`/api/records`, {
+            params: {
+                batch,
+                limit: batchSize,
+                query,
+                sortField: sortField.value,
+                sortOrder: sortOrder.value
+            }
+        });
         
         if (response.data.data.length > 0) {
             const insertIndex = (batch - 1) * batchSize;
@@ -45,6 +57,16 @@ const fetchLogs = async (batch) => {
     }
 };
 
+const handleSort = async (field, order) => {
+    sortField.value = field;
+    sortOrder.value = order;
+    currentPage.value = 1;
+    loadedBatches.value.clear();
+    records.value = [];
+    await fetchLogs(1, searchQuery.value);
+    updateDisplayRecords(1);
+};
+
 const updateDisplayRecords = (pageNumber) => {
     const startIndex = (pageNumber - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
@@ -59,7 +81,7 @@ const changePage = async (newPage) => {
     const requiredBatch = Math.floor(startIndex / batchSize) + 1;
 
     if (!loadedBatches.value.has(requiredBatch) && startIndex < totalRecords.value) {
-        await fetchLogs(requiredBatch);
+        await fetchLogs(requiredBatch, searchQuery.value);
     }
     
     updateDisplayRecords(newPage);
@@ -69,9 +91,22 @@ const handleProcessComplete = async () => {
     currentPage.value = 1;
     tableKey.value += 1;
     loadedBatches.value.clear();
-    await fetchLogs(1);
+    await fetchLogs(1, searchQuery.value);
     updateDisplayRecords(1);
 };
+
+const handleSearch = () => {
+    clearTimeout(searchTimer.value);
+    searchTimer.value = setTimeout(async () => {
+		currentPage.value = 1;
+        loadedBatches.value.clear();
+        records.value = [];
+        await fetchLogs(1, searchQuery.value);
+        updateDisplayRecords(1);
+    }, 500);
+};
+
+watch(searchQuery, handleSearch); // Lắng nghe sự thay đổi trong searchQuery
 
 onMounted(async () => {
     await fetchLogs(1);
@@ -82,16 +117,44 @@ onMounted(async () => {
 <template>
     <section id="homeview">
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-md-9">
                 <h5 class="sub-title">Tìm kiếm tài khoản lộ lọt</h5>
-				<TableSkeleton v-show="loading"></TableSkeleton>
+
+                <!-- 🔍 Thanh tìm kiếm -->
+                <div class="search-container">
+                    <input 
+                        type="text" 
+                        v-model="searchQuery" 
+                        placeholder="Nhập username hoặc URL..."
+                        class="search-input"
+                    />
+                </div>
+
+                <TableSkeleton v-show="loading"></TableSkeleton>
                 <vue-good-table
-					v-show="!loading"
+                    v-show="!loading"
                     :key="tableKey"
                     :columns="[
-                        { label: 'Tài khoản', field: 'username', sortable: false },
-                        { label: 'Mật khẩu', field: 'password', sortable: false },
-                        { label: 'URL Path', field: 'url_path', sortable: false },
+                        { 
+                            label: 'Tài khoản', 
+                            field: 'username', 
+                            sortable: false,
+                            tdClass: 'cell-wrap',
+                            thClass: 'th-custom'
+                        },
+                        { 
+                            label: 'Mật khẩu', 
+                            field: 'password', 
+                            sortable: false,
+                            tdClass: 'cell-wrap'
+                        },
+                        { 
+                            label: 'URL Path', 
+                            field: 'url_path', 
+                            sortable: false,
+                            tdClass: 'cell-wrap url-path',
+                            thClass: 'th-custom'
+                        },
                     ]"
                     :rows="displayRecords"
                     :total-rows="totalRecords"
@@ -102,20 +165,107 @@ onMounted(async () => {
                         perPageDropdownEnabled: false,
                     }"
                 >
-                  <!-- 📌 Ghi đè pagination -->
-                  <template #pagination-bottom>
-                    <CustomPagination 
-                      :total-records="totalRecords" 
-                      :total-pages="totalPages"
-                      :current-page="currentPage"
-                      @change-page="changePage"
-                    />
-                  </template>
+					<template #table-column="{ column }">
+						<div class="th-wrapper">
+							<span>{{ column.label }}</span>
+							<div class="sort-buttons">
+							<button 
+								class="sort-btn sort-asc" 
+								:class="{ active: sortField === column.field && sortOrder === 'asc' }"
+								@click="handleSort(column.field, 'asc')"
+							>
+								<span class="sr-only">Sort ascending</span>
+							</button>
+							<button 
+								class="sort-btn sort-desc"
+								:class="{ active: sortField === column.field && sortOrder === 'desc' }"
+								@click="handleSort(column.field, 'desc')"
+							>
+								<span class="sr-only">Sort descending</span>
+							</button>
+							</div>
+						</div>
+					</template>
+
+
+                    <template #pagination-bottom>
+                        <CustomPagination 
+                            :total-records="totalRecords" 
+                            :total-pages="totalPages"
+                            :current-page="currentPage"
+                            @change-page="changePage"
+                        />
+                    </template>
                 </vue-good-table>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <LogExecComponent @process-complete="handleProcessComplete"/>
             </div>
         </div>
     </section>
 </template>
+
+<style scoped>
+
+.th-wrapper[data-v-b4e148ca] {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+}
+
+.sort-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.sort-btn {
+    width: 0;
+    height: 0;
+    padding: 0;
+    border: 4px solid transparent;
+    background: transparent;
+    cursor: pointer;
+}
+
+.sort-btn.sort-asc {
+    border-bottom: 4px solid #606266;
+    margin-bottom: 2px;
+}
+
+.sort-btn.sort-desc {
+    border-top: 4px solid #606266;
+}
+
+.sort-btn.active.sort-asc {
+    border-bottom-color: #2196F3;
+}
+
+.sort-btn.active.sort-desc {
+    border-top-color: #2196F3;
+}
+
+/* 🔍 Search Bar */
+.search-container {
+    display: flex;
+    /* justify-content: center; */
+    margin-bottom: 15px;
+}
+
+.search-input {
+    width: 100%;
+    max-width: 300px;
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    outline: none;
+    transition: all 0.3s ease-in-out;
+}
+
+.search-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+</style>

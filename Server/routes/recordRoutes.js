@@ -93,16 +93,39 @@ router.post("/insert", async (req, res) => {
 router.get("/", async (req, res) => {
     try {
         const batch = parseInt(req.query.batch) || 1;
-        const limit = parseInt(req.query.limit) || 50; // Mặc định lấy 50 records/lần
+        const limit = parseInt(req.query.limit) || 1000;
+        const searchQuery = req.query.query ? req.query.query.trim() : "";
+        const sortField = req.query.sortField;
+        const sortOrder = req.query.sortOrder;
 
         const skip = (batch - 1) * limit;
 
-        const records = await Record.find()
-            .sort({ _id: -1 })
+        let query = {};
+        let sort = { _id: -1 }; // default sort
+
+        if (searchQuery) {
+			const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            query = {
+                $or: [
+                    { username: { $regex: escapedQuery, $options: "i" } },
+                    { url_path: { $regex: escapedQuery, $options: "i" } }
+                ]
+            };
+        }
+
+        // Apply sorting if provided
+        if (sortField && sortOrder) {
+            sort = {
+                [sortField]: sortOrder === 'asc' ? 1 : -1
+            };
+        }
+
+        const records = await Record.find(query)
+            .sort(sort)
             .skip(skip)
             .limit(limit);
 
-        const totalRecords = await Record.countDocuments();
+        const totalRecords = await Record.countDocuments(query);
 
         res.status(200).json({
             batch,
@@ -116,7 +139,6 @@ router.get("/", async (req, res) => {
         res.status(500).json({ error: "Error fetching records", details: error.message });
     }
 });
-
 
 
 module.exports = router;

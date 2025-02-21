@@ -1,10 +1,13 @@
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, computed, onMounted, watch, onUpdated } from "vue";
 import axios from "axios";
 import $toast from "@/utils/VueToast";
 import LogExecComponent from "@/components/LogExecComponent.vue";
 import TableSkeleton from "@/components/ui/TableSkeleton.vue";
 import CustomPagination from "@/components/ui/CustomPagination.vue";
+import feather from 'feather-icons';
+import EditRecordModal from "@/components/modals/EditRecordModal.vue";
+
 
 const records = ref([]);
 const displayRecords = ref([]);
@@ -20,6 +23,38 @@ const searchQuery = ref("");
 const searchTimer = ref(null);
 const sortField = ref("");
 const sortOrder = ref(""); // "asc" or "desc"
+const columnsForTable = ref([
+	{ 
+        label: '', 
+        field: 'actions', 
+        sortable: false,
+        tdClass: 'cell-actions', 
+        thClass: 'th-actions'
+    },
+	{ 
+		label: 'Tài khoản', 
+		field: 'username', 
+		sortable: false,
+		tdClass: 'cell-wrap',
+		thClass: 'th-custom'
+	},
+	{ 
+		label: 'Mật khẩu', 
+		field: 'password', 
+		sortable: false,
+		tdClass: 'cell-wrap'
+	},
+	{ 
+		label: 'URL Path', 
+		field: 'url_path', 
+		sortable: false,
+		tdClass: 'cell-wrap url-path',
+		thClass: 'th-custom'
+	},
+]); 
+const isEditModalOpen = ref(false);
+const selectedRecord = ref(null);
+
 
 const fetchLogs = async (batch, query = "") => {
     if (loadedBatches.value.has(batch) && query === "" && !sortField.value) return true;
@@ -106,11 +141,25 @@ const handleSearch = () => {
     }, 500);
 };
 
+const editRecord = (record) => {
+    selectedRecord.value = { ...record };
+    isEditModalOpen.value = true;
+};
+
+const handleSaveRecord = (updatedRecord) => {
+
+};
+
+
 watch(searchQuery, handleSearch); // Lắng nghe sự thay đổi trong searchQuery
 
 onMounted(async () => {
     await fetchLogs(1);
     updateDisplayRecords(1);
+});
+
+onUpdated(async () => {
+	feather.replace();
 });
 </script>
 
@@ -134,28 +183,7 @@ onMounted(async () => {
                 <vue-good-table
                     v-show="!loading"
                     :key="tableKey"
-                    :columns="[
-                        { 
-                            label: 'Tài khoản', 
-                            field: 'username', 
-                            sortable: false,
-                            tdClass: 'cell-wrap',
-                            thClass: 'th-custom'
-                        },
-                        { 
-                            label: 'Mật khẩu', 
-                            field: 'password', 
-                            sortable: false,
-                            tdClass: 'cell-wrap'
-                        },
-                        { 
-                            label: 'URL Path', 
-                            field: 'url_path', 
-                            sortable: false,
-                            tdClass: 'cell-wrap url-path',
-                            thClass: 'th-custom'
-                        },
-                    ]"
+                    :columns="columnsForTable"
                     :rows="displayRecords"
                     :total-rows="totalRecords"
                     :loading="loading"
@@ -165,10 +193,10 @@ onMounted(async () => {
                         perPageDropdownEnabled: false,
                     }"
                 >
-					<template #table-column="{ column }">
-						<div class="th-wrapper">
-							<span>{{ column.label }}</span>
-							<div class="sort-buttons">
+				<template #table-column="{ column }">
+					<div v-if="column.field !== 'actions'" class="th-wrapper">
+						<span>{{ column.label }}</span>
+						<div class="sort-buttons">
 							<button 
 								class="sort-btn sort-asc" 
 								:class="{ active: sortField === column.field && sortOrder === 'asc' }"
@@ -183,29 +211,51 @@ onMounted(async () => {
 							>
 								<span class="sr-only">Sort descending</span>
 							</button>
-							</div>
 						</div>
-					</template>
+					</div>
+				</template>
 
+				<!-- Custom cell cho cột Actions -->
+				<template #table-row="{ row, column }">
+				<div v-if="column.field === 'actions'" class="text-center d-flex justify-content-center">
+					<button class="btn btn-warning btn-sm d-flex align-items-center gap-2 btn-edit" @click="editRecord(row)">
+						<i data-feather="edit"></i>
+					</button>
+				</div>
+				</template>
 
-                    <template #pagination-bottom>
-                        <CustomPagination 
-                            :total-records="totalRecords" 
-                            :total-pages="totalPages"
-                            :current-page="currentPage"
-                            @change-page="changePage"
-                        />
-                    </template>
+				<template #pagination-bottom>
+					<CustomPagination 
+						:total-records="totalRecords" 
+						:total-pages="totalPages"
+						:current-page="currentPage"
+						@change-page="changePage"
+					/>
+				</template>
                 </vue-good-table>
             </div>
             <div class="col-md-3">
                 <LogExecComponent @process-complete="handleProcessComplete"/>
             </div>
         </div>
+
+		<EditRecordModal 
+			:isOpen="isEditModalOpen" 
+			:record="selectedRecord" 
+			@update:isOpen="isEditModalOpen = $event"
+			@save="handleSaveRecord"
+		/>
     </section>
 </template>
 
 <style scoped>
+.btn-edit{
+	color: #fff;
+}
+
+.btn-edit svg{
+	width: 20px;
+}
 
 .th-wrapper[data-v-b4e148ca] {
     display: flex;

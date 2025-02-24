@@ -42,6 +42,10 @@
 			  <input type="radio" id="failure" value="failure" v-model="editedRecord.login_status" class="form-check-input" />
 			  <label for="failure" class="form-check-label ms-1">Thất bại</label>
 			</div>
+			<div>
+			  <input type="radio" id="failure" value="pending" v-model="editedRecord.login_status" class="form-check-input" />
+			  <label for="failure" class="form-check-label ms-1">Chưa đăng nhập</label>
+			</div>
 		  </div>
 		</div>
 		<div class="modal-footer">

@@ -148,26 +148,37 @@ const editRecord = (record) => {
 
 const handleSaveRecord = async (updatedRecord) => {
     try {
+        loading.value = true;
         const response = await axios.put("/api/records/update", updatedRecord);
 
-        // Cập nhật nhiều records nếu có
-        const { updatedRecords } = response.data;
-        
-        updatedRecords.forEach(newRecord => {
-            const index = records.value.findIndex(r => r._id === newRecord._id);
+        if (!response.data) {
+            console.error('Missing response data');
+            return;
+        }
+
+        if (response.data.fetch_all) {
+            // Nếu applyToAll = true, fetch lại danh sách từ server
+            await handleProcessComplete();
+        } else if (response.data.updatedRecord) {
+            // Nếu chỉ cập nhật một phần tử, tìm trong danh sách records.value và cập nhật
+            const newRecord = response.data.updatedRecord;
+            const index = records.value.findIndex(r => r && r._id === newRecord._id);
             if (index !== -1) {
                 records.value[index] = { ...records.value[index], ...newRecord };
             }
-        });
+            updateDisplayRecords(currentPage.value);
+        }
 
-        // Cập nhật lại display records
-        updateDisplayRecords(currentPage.value);
-		$toast.success(response.data.message || "Cập nhật thành công!");
+        $toast.success(response.data.message || "Cập nhật thành công!");
     } catch (error) {
-		console.log(error)
-        // $toast.error(error.response.data.error);
+        console.error('Error details:', error);
+        $toast.error("Lỗi khi cập nhật: " + (error.response?.data?.error || error.message));
+    } finally {
+        loading.value = false;
     }
 };
+
+
 
 const getRowStyleClass = (row) => {
 	return `status-${row.login_status}`

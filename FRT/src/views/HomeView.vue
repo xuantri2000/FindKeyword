@@ -147,7 +147,7 @@ const editRecord = (record) => {
 };
 
 const handleSaveRecord = (updatedRecord) => {
-
+	console.log(updatedRecord)
 };
 
 

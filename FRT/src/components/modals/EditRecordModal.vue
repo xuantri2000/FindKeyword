@@ -35,11 +35,11 @@
 		  <div class="form-group mb-1 fade-in" style="animation-delay: 0.4s">
 			<label class="form-label">Tình trạng đăng nhập</label>
 			<div>
-			  <input type="radio" id="success" value="success" v-model="loginStatus" class="form-check-input" />
+			  <input type="radio" id="success" value="true" v-model="loginStatus" class="form-check-input" />
 			  <label for="success" class="form-check-label ms-1">Thành công</label>
 			</div>
 			<div>
-			  <input type="radio" id="failure" value="failure" v-model="loginStatus" class="form-check-input" />
+			  <input type="radio" id="failure" value="false" v-model="loginStatus" class="form-check-input" />
 			  <label for="failure" class="form-check-label ms-1">Thất bại</label>
 			</div>
 		  </div>
@@ -81,6 +81,7 @@ const closeModal = () => {
 
   setTimeout(() => {
     emit('update:isOpen', false);
+	applyToAll.value = false;
   }, 300);
 };
 

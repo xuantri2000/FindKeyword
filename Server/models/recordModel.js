@@ -7,6 +7,7 @@ const recordSchema = new mongoose.Schema({
     filename: { type: String },
     run_time: { type: String },
     log_resource: { type: String },
+    login_status: { type: String, default: 'pending' },
 });
 
 // Đảm bảo rằng `username` và `password` kết hợp là duy nhất

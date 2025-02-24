@@ -44,7 +44,7 @@ router.post("/insert", async (req, res) => {
                 for (const record of records) {
                     operations.push({
                         updateOne: {
-                            filter: { username: record.username, password: record.password },
+                            filter: { username: record.username, password: record.password, url_path: record.url_path },
                             update: {
                                 $setOnInsert: {
                                     url_path: record.url_path,

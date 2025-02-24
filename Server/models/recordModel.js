@@ -10,7 +10,7 @@ const recordSchema = new mongoose.Schema({
 });
 
 // Đảm bảo rằng `username` và `password` kết hợp là duy nhất
-recordSchema.index({ username: 1, password: 1 }, { unique: true });
+recordSchema.index({ username: 1, password: 1, url_path: 1 }, { unique: true });
 recordSchema.index({ filename: 1});
 
 const Record = mongoose.model("Record", recordSchema);

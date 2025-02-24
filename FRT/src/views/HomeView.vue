@@ -146,10 +146,32 @@ const editRecord = (record) => {
     isEditModalOpen.value = true;
 };
 
-const handleSaveRecord = (updatedRecord) => {
-	console.log(updatedRecord)
+const handleSaveRecord = async (updatedRecord) => {
+    try {
+        const response = await axios.put("/api/records/update", updatedRecord);
+
+        // Cập nhật nhiều records nếu có
+        const { updatedRecords } = response.data;
+        
+        updatedRecords.forEach(newRecord => {
+            const index = records.value.findIndex(r => r._id === newRecord._id);
+            if (index !== -1) {
+                records.value[index] = { ...records.value[index], ...newRecord };
+            }
+        });
+
+        // Cập nhật lại display records
+        updateDisplayRecords(currentPage.value);
+		$toast.success(response.data.message || "Cập nhật thành công!");
+    } catch (error) {
+		console.log(error)
+        // $toast.error(error.response.data.error);
+    }
 };
 
+const getRowStyleClass = (row) => {
+	return `status-${row.login_status}`
+}
 
 watch(searchQuery, handleSearch); // Lắng nghe sự thay đổi trong searchQuery
 
@@ -187,6 +209,7 @@ onUpdated(async () => {
                     :rows="displayRecords"
                     :total-rows="totalRecords"
                     :loading="loading"
+					:row-style-class="getRowStyleClass"
                     :pagination-options="{
                         enabled: true,
                         perPage: itemsPerPage,

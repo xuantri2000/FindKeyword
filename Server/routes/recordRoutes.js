@@ -140,5 +140,70 @@ router.get("/", async (req, res) => {
     }
 });
 
+router.put("/update", async (req, res) => {
+    try {
+        const updatedRecord = req.body;
+        if (!updatedRecord || !updatedRecord._id) {
+            return res.status(400).json({ error: "Thiếu thông tin cập nhật hoặc _id không hợp lệ." });
+        }
+
+        // Lấy record hiện tại để lấy đường dẫn cũ
+        const currentRecord = await Record.findById(updatedRecord._id);
+        if (!currentRecord) {
+            return res.status(404).json({ error: "Tài khoản không tồn tại trong cơ sở dữ liệu." });
+        }
+        const oldUrlPath = currentRecord.url_path;
+
+        const updateData = {
+            url_path: updatedRecord.url_path,
+            login_status: updatedRecord.login_status
+        };
+
+        // Mảng chứa _id của các records được cập nhật
+        let updatedRecordIds = [updatedRecord._id];
+
+        // Cập nhật record hiện tại
+        await Record.updateOne(
+            { _id: updatedRecord._id },
+            { $set: updateData }
+        );
+
+        // Nếu applyToAll, cập nhật các records khác và lấy _id
+        if (updatedRecord.applyToAll) {
+            // Tìm tất cả records có cùng url_path (trừ record hiện tại)
+            const recordsToUpdate = await Record.find({
+                url_path: oldUrlPath,
+                _id: { $ne: updatedRecord._id }
+            });
+            
+            // Lấy danh sách _id
+            const additionalIds = recordsToUpdate.map(record => record._id);
+            updatedRecordIds = [...updatedRecordIds, ...additionalIds];
+
+            // Thực hiện cập nhật
+            await Record.updateMany(
+                { 
+                    url_path: oldUrlPath,
+                    _id: { $ne: updatedRecord._id }
+                },
+                { $set: updateData }
+            );
+        }
+
+        // Lấy tất cả records đã được cập nhật
+        const updatedRecords = await Record.find({
+            _id: { $in: updatedRecordIds }
+        });
+
+        res.status(200).json({
+            message: "Cập nhật thành công!",
+            updatedRecords: updatedRecords,
+            updatedRecordIds: updatedRecordIds
+        });
+    } catch (error) {
+        console.error("Lỗi khi cập nhật record:", error);
+		return res.status(404).json({ error: "Đã xảy ra lỗi khi cập nhật thông tin!" });
+    }
+});
 
 module.exports = router;

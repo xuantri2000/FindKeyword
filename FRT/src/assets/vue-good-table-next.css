@@ -100,6 +100,20 @@ table.vgt-table tr.clickable:hover {
 	background-color: #F1F5FD;
 }
 
+table.vgt-table .status-success{
+	background: #73db7391;
+}
+table.vgt-table .status-success td{
+	/* color: #fff ; */
+}
+
+table.vgt-table .status-failure {
+	background: #e398ab5c !important;
+}
+table.vgt-table .status-failure td{
+	/* color: #fff ; */
+}
+
 .vgt-table th {
 	padding: 1em 0.3em;
 	vertical-align: middle;

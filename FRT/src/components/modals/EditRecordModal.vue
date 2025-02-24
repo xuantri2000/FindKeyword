@@ -6,10 +6,10 @@
 		  <button @click="closeModal" class="btn-close close hover-shake" aria-label="Close"></button>
 		</div>
 		<div class="modal-body py-4">
-			<div class="form-group fade-in" style="animation-delay: 0.1s">
-				<label class="form-label me-1">Tài khoản:</label>
-				<span>{{ editedRecord.username }}</span>
-			</div>
+		  <div class="form-group fade-in" style="animation-delay: 0.1s">
+			<label class="form-label me-1">Tài khoản:</label>
+			<span>{{ editedRecord.username }}</span>
+		  </div>
 		  
 		  <div class="form-group mb-2 fade-in" style="animation-delay: 0.1s">
 			<label class="form-label me-1">Mật khẩu:</label>
@@ -35,11 +35,11 @@
 		  <div class="form-group mb-1 fade-in" style="animation-delay: 0.4s">
 			<label class="form-label">Tình trạng đăng nhập</label>
 			<div>
-			  <input type="radio" id="success" value="true" v-model="loginStatus" class="form-check-input" />
+			  <input type="radio" id="success" value="success" v-model="editedRecord.login_status" class="form-check-input" />
 			  <label for="success" class="form-check-label ms-1">Thành công</label>
 			</div>
 			<div>
-			  <input type="radio" id="failure" value="false" v-model="loginStatus" class="form-check-input" />
+			  <input type="radio" id="failure" value="failure" v-model="editedRecord.login_status" class="form-check-input" />
 			  <label for="failure" class="form-check-label ms-1">Thất bại</label>
 			</div>
 		  </div>
@@ -54,42 +54,45 @@
 		</div>
 	  </div>
 	</div>
-</template>
+  </template>
   
-<script setup>
-import { defineProps, defineEmits, ref, watch } from 'vue';
+  <script setup>
+  import { defineProps, defineEmits, ref, watch } from 'vue';
+  
+  const props = defineProps({
+	isOpen: Boolean,
+	record: Object
+  });
+  
+  const emit = defineEmits(['update:isOpen', 'save']);
+  
+  const editedRecord = ref({ ...props.record });
+  const applyToAll = ref(false);
+  
+  // Watch record changes and update editedRecord
+  watch(() => props.record, (newRecord) => {
+	if (newRecord) {
+	  editedRecord.value = { ...newRecord };
+	}
+  }, { immediate: true, deep: true });
+  
+  const closeModal = () => {
+	const modalOverlay = document.querySelector('.modal-overlay');
+	modalOverlay.classList.remove('animate__fadeIn');
+	modalOverlay.classList.add('animate__fadeOut');
+  
+	setTimeout(() => {
+	  emit('update:isOpen', false);
+	  applyToAll.value = false;
+	}, 300);
+  };
+  
+  const saveChanges = () => {
+	emit('save', { ...editedRecord.value, applyToAll: applyToAll.value });
+	closeModal();
+  };
+  </script>
 
-const props = defineProps({
-  isOpen: Boolean,
-  record: Object
-});
-
-const emit = defineEmits(['update:isOpen', 'save']);
-
-const editedRecord = ref({ ...props.record });
-const applyToAll = ref(false);
-const loginStatus = ref(null);
-
-watch(() => props.record, (newRecord) => {
-  editedRecord.value = { ...newRecord };
-}, { deep: true });
-
-const closeModal = () => {
-  const modalOverlay = document.querySelector('.modal-overlay');
-  modalOverlay.classList.remove('animate__fadeIn');
-  modalOverlay.classList.add('animate__fadeOut');
-
-  setTimeout(() => {
-    emit('update:isOpen', false);
-	applyToAll.value = false;
-  }, 300);
-};
-
-const saveChanges = () => {
-  emit('save', { ...editedRecord.value, applyToAll: applyToAll.value, loginStatus: loginStatus.value });
-  closeModal();
-};
-</script>
   
 <style scoped>
 .fade-in {

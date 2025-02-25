@@ -97,29 +97,35 @@ router.get("/", async (req, res) => {
         const searchQuery = req.query.query ? req.query.query.trim() : "";
         const sortField = req.query.sortField;
         const sortOrder = req.query.sortOrder;
+        const status = req.query.status; // Lọc theo trạng thái
 
         const skip = (batch - 1) * limit;
 
         let query = {};
-        let sort = { _id: -1 }; // default sort
+        let sort = { _id: -1 }; // Default sort
 
+        // Tìm kiếm theo username hoặc url_path
         if (searchQuery) {
-			const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            query = {
-                $or: [
-                    { username: { $regex: escapedQuery, $options: "i" } },
-                    { url_path: { $regex: escapedQuery, $options: "i" } }
-                ]
-            };
+            const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            query.$or = [
+                { username: { $regex: escapedQuery, $options: "i" } },
+                { url_path: { $regex: escapedQuery, $options: "i" } }
+            ];
         }
 
-        // Apply sorting if provided
+        // Lọc theo trạng thái đăng nhập nếu có
+        if (status) {
+            query.login_status = status;
+        }
+
+        // Apply sorting nếu có
         if (sortField && sortOrder) {
             sort = {
                 [sortField]: sortOrder === 'asc' ? 1 : -1
             };
         }
 
+        // Fetch dữ liệu từ database
         const records = await Record.find(query)
             .sort(sort)
             .skip(skip)
@@ -139,6 +145,7 @@ router.get("/", async (req, res) => {
         res.status(500).json({ error: "Error fetching records", details: error.message });
     }
 });
+
 
 router.put("/update", async (req, res) => {
     try {

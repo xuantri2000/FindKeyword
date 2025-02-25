@@ -4,7 +4,7 @@ import json
 
 def search_in_files():
     """
-    Tìm kiếm mảng từ khóa trong tất cả các tệp .txt trong thư mục hiện tại và các thư mục con.
+    Tìm kiếm từ khóa trong tất cả các tệp .txt trong thư mục hiện tại và các thư mục con.
     Kết quả được lưu vào file tự động đặt tên theo định dạng ngàythángnămgiờphútgiây.json.
     """
     # Mảng từ khóa cố định
@@ -29,15 +29,21 @@ def search_in_files():
                                 # Tách nội dung theo dấu ":"
                                 parts = line.strip().split(":")
                                 
-                                # Nếu có ít nhất 3 phần (URL + username + password)
                                 if len(parts) >= 3:  
                                     url_path = ":".join(parts[:-2]).strip()  # Ghép lại các phần đầu làm URL
                                     username = parts[-2].strip()  # Username là phần kế cuối
                                     password = parts[-1].strip()  # Password là phần cuối
                                 else:
-                                    url_path = line.strip()  # Nếu không đủ phần tử, lấy toàn bộ dòng
-                                    username = ""
-                                    password = ""
+                                    # Nếu không đủ phần tử sau khi split bằng ":", thử tách bằng "|"
+                                    parts = line.strip().split("|")
+                                    if len(parts) >= 3:
+                                        url_path = parts[0].strip()  # URL
+                                        username = parts[1].strip()  # Username
+                                        password = parts[2].strip()  # Password
+                                    else:
+                                        url_path = line.strip()  # Nếu không đủ phần tử, lấy toàn bộ dòng
+                                        username = ""
+                                        password = ""
 
                                 # Tạo dictionary JSON
                                 result = {

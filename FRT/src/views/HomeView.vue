@@ -54,10 +54,10 @@ const columnsForTable = ref([
 ]); 
 const isEditModalOpen = ref(false);
 const selectedRecord = ref(null);
-
+const selectedStatus = ref("");
 
 const fetchLogs = async (batch, query = "") => {
-    if (loadedBatches.value.has(batch) && query === "" && !sortField.value) return true;
+    if (loadedBatches.value.has(batch) && query === "" && !sortField.value && !selectedStatus.value) return true;
 
     loading.value = true;
     try {
@@ -67,10 +67,11 @@ const fetchLogs = async (batch, query = "") => {
                 limit: batchSize,
                 query,
                 sortField: sortField.value,
-                sortOrder: sortOrder.value
+                sortOrder: sortOrder.value,
+                status: selectedStatus.value // Gửi trạng thái lọc đến server
             }
         });
-        
+
         if (response.data.data.length > 0) {
             const insertIndex = (batch - 1) * batchSize;
             if (insertIndex > records.value.length) {
@@ -95,6 +96,14 @@ const fetchLogs = async (batch, query = "") => {
 const handleSort = async (field, order) => {
     sortField.value = field;
     sortOrder.value = order;
+    currentPage.value = 1;
+    loadedBatches.value.clear();
+    records.value = [];
+    await fetchLogs(1, searchQuery.value);
+    updateDisplayRecords(1);
+};
+
+const handleFilterChange = async () => {
     currentPage.value = 1;
     loadedBatches.value.clear();
     records.value = [];
@@ -203,14 +212,22 @@ onUpdated(async () => {
                 <h5 class="sub-title">Tìm kiếm tài khoản lộ lọt</h5>
 
                 <!-- 🔍 Thanh tìm kiếm -->
-                <div class="search-container">
-                    <input 
-                        type="text" 
-                        v-model="searchQuery" 
-                        placeholder="Nhập username hoặc URL..."
-                        class="search-input"
-                    />
-                </div>
+                <div class="search-filter-container">
+					<input 
+						type="text" 
+						v-model="searchQuery" 
+						placeholder="Nhập username hoặc URL..."
+						class="search-input"
+					/>
+
+					<!-- Bộ lọc trạng thái đăng nhập -->
+					<select v-model="selectedStatus" @change="handleFilterChange" class="status-filter">
+						<option value="">Tất cả</option>
+						<option value="success">Thành công</option>
+						<option value="failure">Thất bại</option>
+						<option value="pending">Chưa đăng nhập</option>
+					</select>
+				</div>
 
                 <TableSkeleton v-show="loading"></TableSkeleton>
                 <vue-good-table
@@ -331,9 +348,10 @@ onUpdated(async () => {
 }
 
 /* 🔍 Search Bar */
-.search-container {
+.search-filter-container {
     display: flex;
-    /* justify-content: center; */
+    align-items: center;
+    gap: 10px; /* Khoảng cách giữa input và filter */
     margin-bottom: 15px;
 }
 
@@ -352,4 +370,88 @@ onUpdated(async () => {
     border-color: #007bff;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
 }
+
+/* Style cho dropdown bộ lọc */
+.status-filter {
+    padding: 8px 12px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 16px;
+    background: white;
+    cursor: pointer;
+    appearance: none; /* Ẩn mũi tên mặc định của trình duyệt */
+    position: relative;
+    transition: all 0.3s ease-in-out;
+    width: 180px;
+}
+
+/* Hiệu ứng hover & focus */
+.status-filter:focus,
+.status-filter:hover {
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.3);
+}
+
+/* Tạo mũi tên dropdown tùy chỉnh */
+.status-filter::after {
+    content: "▼"; /* Unicode cho mũi tên xuống */
+    font-size: 12px;
+    color: #555;
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none; /* Tránh mũi tên bị nhấp */
+}
+
+/* Định dạng danh sách dropdown */
+.status-filter-container {
+    position: relative;
+}
+
+.status-dropdown {
+    position: absolute;
+    right: 0; /* Đẩy menu dropdown về bên phải */
+    top: 100%;
+    background: white;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    min-width: 180px;
+    display: none; /* Ẩn mặc định */
+}
+
+/* Hiển thị dropdown khi active */
+.status-filter-container.open .status-dropdown {
+    display: block;
+}
+
+/* Style cho từng mục trong dropdown */
+.status-dropdown option {
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.2s ease-in-out;
+}
+
+.status-dropdown option:hover {
+    background: #007bff;
+    color: white;
+}
+
+/* Responsive cho màn hình nhỏ */
+@media (max-width: 768px) {
+    .search-filter-container {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .search-input,
+    .status-filter {
+        width: 100%;
+        max-width: none;
+    }
+}
+
 </style>

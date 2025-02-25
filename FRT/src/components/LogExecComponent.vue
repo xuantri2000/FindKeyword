@@ -111,13 +111,30 @@ const handleProcessFiles = () => {
 		});;
 };
 
+const refreshLogs = async () => {
+    loadingLogs.value = true;
+    loadingFailedLogs.value = true;
+    await Promise.all([fetchLogs(), fetchFailedLogs()]);
+    loadingLogs.value = false;
+    loadingFailedLogs.value = false;
+    $toast.success("Đã tải lại danh sách logs!");
+};
+
 onMounted(async () => {
     await Promise.all([fetchLogs(), fetchFailedLogs()]);
 });
 </script>
 
 <template>
-	<h5 class="sub-title">Log chưa xử lý</h5>
+	<div class="log-header">
+		<h5 class="sub-title">Log chưa xử lý</h5>
+
+		<!-- Nút Tải lại (chỉ có icon) -->
+		<button class="reload-btn" @click="refreshLogs">
+			🔄
+		</button>
+	</div>
+
 	<FileListSkeleton v-if="loadingLogs"></FileListSkeleton>
 	<div class="file-list" v-else>
 		<!-- Nút Chọn Tất Cả -->
@@ -166,6 +183,31 @@ onMounted(async () => {
 	</div>
 </template>
 <style scoped>
+.sub-title{
+	margin-bottom: 0px;
+}
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.reload-btn {
+    background: transparent; /* Không có nền */
+    color: white; /* Icon màu trắng */
+    border: none; /* Không có viền */
+    font-size: 18px; /* Tăng kích thước icon */
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+    padding: 5px; /* Tạo khoảng cách click dễ hơn */
+}
+
+.reload-btn:hover {
+    transform: rotate(90deg); /* Xoay nhẹ khi hover */
+}
+
+
 /* Layout tổng thể */
 /* Tổng thể của danh sách file */
 .file-list {

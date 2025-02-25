@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import BlackListView from '../views/BlackListView.vue'
 
 const appName = 'Công cụ tìm kiếm tài khoản lộ lọt';
 const router = createRouter({
@@ -12,13 +13,13 @@ const router = createRouter({
 	  meta: { title: `Trang chủ | ${appName}` }
     },
     {
-      path: '/about',
-      name: 'about',
+      path: '/blacklist',
+      name: 'blacklist',
       // route level code-splitting
       // this generates a separate chunk (About.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
-	  meta: { title: `BlackList | ${appName}` }
+      component: BlackListView,
+	  meta: { title: `Trang chủ | ${appName}` }
     },
   ],
 })

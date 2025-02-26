@@ -114,6 +114,10 @@ table.vgt-table .status-failure td{
 	/* color: #fff ; */
 }
 
+.cell-actions{
+	width: 150px;
+}
+
 .vgt-table th {
 	padding: 1em 0.3em;
 	vertical-align: middle;

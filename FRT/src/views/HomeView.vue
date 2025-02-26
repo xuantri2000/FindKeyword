@@ -28,7 +28,6 @@ const columnsForTable = ref([
         label: '', 
         field: 'actions', 
         sortable: false,
-        tdClass: 'cell-actions', 
         thClass: 'th-actions'
     },
 	{ 

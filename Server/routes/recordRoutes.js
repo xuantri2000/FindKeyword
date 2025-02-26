@@ -6,6 +6,7 @@ const router = express.Router();
 
 const Record = require("../models/recordModel");
 const Log = require("../models/logModel");
+const Target = require("../models/listModel");
 
 router.post("/insert", async (req, res) => {
     try {
@@ -97,12 +98,19 @@ router.get("/", async (req, res) => {
         const searchQuery = req.query.query ? req.query.query.trim() : "";
         const sortField = req.query.sortField;
         const sortOrder = req.query.sortOrder;
-        const status = req.query.status; // Lọc theo trạng thái
+        const status = req.query.status;
 
         const skip = (batch - 1) * limit;
 
         let query = {};
-        let sort = { _id: -1 }; // Default sort
+        let sort = { _id: -1 };
+
+        // Lấy danh sách URL trong Target để lọc
+        const targetUrls = await Target.find({}, "url_path");
+        const blockedUrls = targetUrls.map(target => new RegExp(target.url_path, "i")); // Regex để kiểm tra gần giống
+
+        // Lọc các record không nằm trong Target
+        query.url_path = { $not: { $in: blockedUrls } };
 
         // Tìm kiếm theo username hoặc url_path
         if (searchQuery) {
@@ -147,6 +155,7 @@ router.get("/", async (req, res) => {
 });
 
 
+
 router.put("/update", async (req, res) => {
     try {
         const updatedRecord = req.body;
@@ -161,6 +170,15 @@ router.put("/update", async (req, res) => {
             return res.status(404).json({ error: "Tài khoản không tồn tại." });
         }
         const oldUrlPath = currentRecord.url_path;
+
+        // Lấy danh sách URL trong Target để kiểm tra
+        const targetUrls = await Target.find({}, "url_path");
+        const blockedUrls = targetUrls.map(target => new RegExp(target.url_path, "i"));
+
+        // Nếu URL gần giống với Target thì không cập nhật
+        if (blockedUrls.some(regex => regex.test(updatedRecord.url_path))) {
+            return res.status(403).json({ error: "Không thể cập nhật do URL thuộc danh sách hạn chế." });
+        }
 
         const updateData = {
             url_path: updatedRecord.url_path,
@@ -183,14 +201,14 @@ router.put("/update", async (req, res) => {
             const bulkUpdateResult = await Record.updateMany(
                 { 
                     url_path: oldUrlPath,
-                    _id: { $ne: updatedRecord._id } // Không cập nhật bản ghi hiện tại 2 lần
+                    _id: { $ne: updatedRecord._id }
                 },
                 { $set: updateData }
             );
 
             return res.status(200).json({
                 message: `Cập nhật thành công! Đã cập nhật ${bulkUpdateResult.modifiedCount} tài khoản.`,
-                fetch_all: true // Chỉ trả về cờ, để phía frontend gọi fetch lại danh sách
+                fetch_all: true
             });
         } else {
             // Nếu chỉ cập nhật một bản ghi, lấy dữ liệu sau khi cập nhật
@@ -198,7 +216,7 @@ router.put("/update", async (req, res) => {
 
             return res.status(200).json({
                 message: `Cập nhật tài khoản "${updatedCurrentRecord.username}" thành công!`,
-                updatedRecord: updatedCurrentRecord, // Trả về bản ghi cập nhật duy nhất
+                updatedRecord: updatedCurrentRecord,
                 fetch_all: false
             });
         }
@@ -207,6 +225,7 @@ router.put("/update", async (req, res) => {
         res.status(500).json({ error: "Đã xảy ra lỗi khi cập nhật thông tin!", details: error.message });
     }
 });
+
 
 
 

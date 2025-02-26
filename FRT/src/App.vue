@@ -17,7 +17,7 @@ onMounted(() => {
 				<RouterLink class="navbar__link" to="/"><i data-feather="home"></i><span>Home</span></RouterLink>
 			</li>
 			<li class="navbar__item">
-				<RouterLink class="navbar__link" to="/about"><i data-feather="message-square"></i><span>Blacklist</span></RouterLink>
+				<RouterLink class="navbar__link" to="/target_list"><i data-feather="message-square"></i><span>Blacklist</span></RouterLink>
 			</li>
 		</ul>
 	</nav>

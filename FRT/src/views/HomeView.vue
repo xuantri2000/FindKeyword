@@ -226,6 +226,11 @@ onUpdated(async () => {
 						<option value="failure">Thất bại</option>
 						<option value="pending">Chưa đăng nhập</option>
 					</select>
+
+					<!-- Nút Tải lại (chỉ có icon) -->
+					<button class="reload-btn" @click="handleProcessComplete">
+						🔄
+					</button>
 				</div>
 
                 <TableSkeleton v-show="loading"></TableSkeleton>
@@ -299,6 +304,21 @@ onUpdated(async () => {
 </template>
 
 <style scoped>
+
+.reload-btn {
+    background: transparent; /* Không có nền */
+    color: white; /* Icon màu trắng */
+    border: none; /* Không có viền */
+    font-size: 18px; /* Tăng kích thước icon */
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+    padding: 5px; /* Tạo khoảng cách click dễ hơn */
+}
+
+.reload-btn:hover {
+    transform: rotate(90deg); /* Xoay nhẹ khi hover */
+}
+
 .btn-edit{
 	color: #fff;
 }

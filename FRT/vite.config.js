@@ -22,6 +22,7 @@ export default defineConfig({
                 rewrite: (path) => path.replace(/^\/api/, ""),
             },
         },
+		port: 9999
     },
 	optimizeDeps: {
 		include: ["vue-good-table-next"]

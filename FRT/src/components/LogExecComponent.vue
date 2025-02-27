@@ -117,7 +117,7 @@ const refreshLogs = async () => {
     await Promise.all([fetchLogs(), fetchFailedLogs()]);
     loadingLogs.value = false;
     loadingFailedLogs.value = false;
-    $toast.success("Đã tải lại danh sách logs!");
+    // $toast.success("Đã tải lại danh sách logs!");
 };
 
 onMounted(async () => {

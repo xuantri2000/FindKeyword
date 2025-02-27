@@ -50,6 +50,13 @@ const columnsForTable = ref([
 		tdClass: 'cell-wrap url-path',
 		thClass: 'th-custom'
 	},
+	{ 
+		label: 'Thời gian', 
+		field: 'run_time', 
+		sortable: false,
+		tdClass: 'cell-wrap run-time',
+		thClass: 'th-custom'
+	},
 ]); 
 const isEditModalOpen = ref(false);
 const selectedRecord = ref(null);

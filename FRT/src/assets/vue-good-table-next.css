@@ -84,6 +84,10 @@ table.vgt-table td.url-path {
 	text-overflow: ellipsis;
 }
 
+table.vgt-table td.run-time {
+	white-space: nowrap;
+}
+
 /* #vgt-table>tbody>tr:nth-of-type(odd){
     background: rgba(0,0,0,0.05);
     color: #758697;

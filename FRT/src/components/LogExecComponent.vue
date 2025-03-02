@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, watch, defineEmits, onUpdated  } from "vue";
+import { ref, onMounted, watch, onUpdated  } from "vue";
 import $toast from '@/utils/VueToast';
 import axios from 'axios';
 import FileListSkeleton from "@/components/ui/FileListSkeleton.vue";
@@ -311,5 +311,8 @@ onMounted(async () => {
     transform: scale(1.05);
 }
 
+.error-log-table{
+	margin-top: 10px;
+}
 
 </style>

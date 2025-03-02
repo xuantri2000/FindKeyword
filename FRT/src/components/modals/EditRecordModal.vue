@@ -19,11 +19,11 @@
 		  
 		  <div class="form-group mb-1 fade-in" style="animation-delay: 0.2s">
 			<label class="form-label">URL Path</label>
-			<input 
+			<textarea
 			  v-model="editedRecord.url_path" 
 			  type="text" 
-			  class="form-control hover-effect"
-			/>
+			  class="form-control hover-effect">
+			</textarea>
 		  </div>
 		  
 		  <div class="form-group mb-3 fade-in" style="animation-delay: 0.3s">

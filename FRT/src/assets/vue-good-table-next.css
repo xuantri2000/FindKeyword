@@ -78,10 +78,10 @@ table.vgt-table td {
 }
 
 table.vgt-table td.url-path {
-	max-width: 300px;
+	/* max-width: 300px;
 	white-space: nowrap;
 	overflow: hidden;
-	text-overflow: ellipsis;
+	text-overflow: ellipsis; */
 }
 
 table.vgt-table td.run-time {
@@ -295,6 +295,10 @@ table.vgt-table .status-failure td{
 
 .vgt-table.bordered td,
 .vgt-table.bordered th {
+	max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 	/* border: 1px solid #DCDFE6; */
 }
 

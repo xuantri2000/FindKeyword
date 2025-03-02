@@ -24,7 +24,8 @@ onMounted(() => {
 
 	<main class="page-content">
 		<div class="title-section">
-			<h1 class="title"><Logo></Logo> Công cụ tìm kiếm tài khoản lộ lọt</h1>
+			<!-- <h1 class="title"><Logo></Logo> Công cụ tìm kiếm tài khoản lộ lọt</h1> -->
+			<h1 class="title">Công cụ tìm kiếm tài khoản lộ lọt</h1>
 		</div>
 		<div class="container pt-2">
 			<RouterView />

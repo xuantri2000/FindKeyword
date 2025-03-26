@@ -420,7 +420,7 @@ onUpdated(async () => {
 /* 🔍 Search Bar */
 .search-filter-container {
     display: flex;
-    align-items: center;
+    /* align-items: center; */
     gap: 10px; /* Khoảng cách giữa input và filter */
     margin-bottom: 15px;
 }

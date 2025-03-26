@@ -61,6 +61,7 @@ const columnsForTable = ref([
 const isEditModalOpen = ref(false);
 const selectedRecord = ref(null);
 const selectedStatus = ref("");
+const exporting = ref(false);
 
 const fetchLogs = async (batch, query = "") => {
     if (loadedBatches.value.has(batch) && query === "" && !sortField.value && !selectedStatus.value) return true;
@@ -96,6 +97,36 @@ const fetchLogs = async (batch, query = "") => {
         return false;
     } finally {
         loading.value = false;
+    }
+};
+
+const exportLogs = async () => {
+    try {
+		exporting.value = true;
+
+        const response = await axios.get("/api/records/export", {
+            params: {
+                query: searchQuery.value,
+                sortField: sortField.value,
+                sortOrder: sortOrder.value,
+                status: selectedStatus.value
+            },
+            responseType: 'blob' // 👈 để nhận dạng file binary
+        });
+
+        // Tạo đường dẫn tải file
+        const blob = new Blob([response.data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", searchQuery.value ? searchQuery.value + ".xlsx" : "data.xlsx");
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+    } catch (error) {
+        $toast.error("Không thể xuất log, vui lòng liên hệ bé Vàng!");
+    } finally {
+        exporting.value = false;
     }
 };
 
@@ -237,6 +268,19 @@ onUpdated(async () => {
 					<!-- Nút Tải lại (chỉ có icon) -->
 					<button class="reload-btn" @click="handleProcessComplete">
 						🔄
+					</button>
+
+					<div style="flex-grow: 1;"></div>
+
+					<!-- Nút Tải lại (chỉ có icon) -->
+					<button class="btn btn-success" @click="exportLogs" :disabled="exporting">
+						<span v-if="exporting">
+							<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+							Đang xuất...
+						</span>
+						<span v-else>
+							Xuất log
+						</span>
 					</button>
 				</div>
 

@@ -3,6 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const { handleFileError } = require("../utils/ExceptionCatch");
 const router = express.Router();
+const ExcelJS = require('exceljs');
 
 const Record = require("../models/recordModel");
 const Log = require("../models/logModel");
@@ -88,6 +89,68 @@ router.post("/insert", async (req, res) => {
     } catch (error) {
         console.error("Lỗi khi insert records:", error);
         res.status(500).json({ error: "Đã xảy ra lỗi khi thêm tài khoản mới!", details: error.message });
+    }
+});
+
+router.get("/export", async (req, res) => {
+    try {
+        const { query, sortField, sortOrder, status } = req.query;
+
+        const filter = {};
+
+		// Lấy danh sách URL trong Target để lọc
+		const targetUrls = await Target.find({}, "url_path");
+		const blockedUrls = targetUrls.map(target => new RegExp(target.url_path, "i"));
+        filter.url_path = { $not: { $in: blockedUrls } };
+
+        if (query) {
+			const rawQuery = query.trim();
+            const escaped = rawQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+            filter.$or = [
+                { username: { $regex: escaped, $options: 'i' } },
+                { url_path: { $regex: escaped, $options: 'i' } }
+            ];
+        }
+
+        if (status) {
+            filter.login_status = status;
+        }
+
+        let sort = { _id: -1 };
+        if (sortField && sortOrder) {
+            sort = { [sortField]: sortOrder === 'asc' ? 1 : -1 };
+        }
+
+        const records = await Record.find(filter).sort(sort); // Giới hạn xuất log
+
+        const workbook = new ExcelJS.Workbook();
+        const sheet = workbook.addWorksheet("Logs");
+
+        sheet.columns = [
+            { header: "Username", key: "username" },
+            { header: "Password", key: "password" },
+            { header: "URL Path", key: "url_path" },
+            { header: "Run Time", key: "run_time" },
+            { header: "Status", key: "login_status" },
+        ];
+
+        records.forEach(r => {
+            sheet.addRow({
+                username: r.username,
+                password: r.password,
+                url_path: r.url_path,
+                run_time: r.run_time,
+                login_status: r.login_status
+            });
+        });
+
+        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        res.setHeader("Content-Disposition", "attachment; filename=logs_export.xlsx");
+
+        await workbook.xlsx.write(res);
+        res.end();
+    } catch (err) {
+        res.status(500).json({ message: "Không thể xuất log, vui lòng liên hệ bé Vàng!" });
     }
 });
 

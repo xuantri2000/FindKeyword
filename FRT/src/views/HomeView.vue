@@ -62,6 +62,8 @@ const isEditModalOpen = ref(false);
 const selectedRecord = ref(null);
 const selectedStatus = ref("");
 const exporting = ref(false);
+const now = new Date();
+const pad = n => n.toString().padStart(2, '0');
 
 const fetchLogs = async (batch, query = "") => {
     if (loadedBatches.value.has(batch) && query === "" && !sortField.value && !selectedStatus.value) return true;
@@ -119,7 +121,17 @@ const exportLogs = async () => {
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
+
+		const timestamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
         link.setAttribute("download", searchQuery.value ? searchQuery.value + ".xlsx" : "data.xlsx");
+		const baseName = (searchQuery.value || "user_data")
+			.trim()
+			.replace(/\s+/g, "_")           // thay space/tab thành _
+			.replace(/[<>:"/\\|?*\x00-\x1F]/g, "") // loại ký tự không hợp lệ
+			.slice(0, 50);
+		const filename = `${timestamp}_${baseName}.xlsx`;
+		link.setAttribute("download", filename);
+
         document.body.appendChild(link);
         link.click();
         link.remove();

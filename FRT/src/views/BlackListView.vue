@@ -3,64 +3,73 @@ import { ref, onMounted, onUpdated } from "vue";
 import axios from "axios";
 import $toast from "@/utils/VueToast";
 import TableSkeleton from "@/components/ui/TableSkeleton.vue";
-import AddTargetListModal from "@/components/modals/AddTargetListModal.vue";
-import UpdateTargetListModal from "@/components/modals/UpdateTargetListModal.vue";
+import EditBlackListModal from "@/components/modals/EditBlackListModal.vue";
 
-const targetlist = ref([]);
+const blacklist = ref([]);
 const loadingBlack = ref(false);
 const newUrl = ref("");
 const tableKey = ref(0); // Thay đổi để cập nhật lại table
-const isOpenAddModal = ref(false);
-const isOpenUpdateModal = ref(false);
+const isEditModalOpen = ref(false);
 const selectedRecord = ref(null);
 
 // Cấu hình cột cho Vue Good Table
 const columnsForTable = ref([
     { label: "", field: "actions", sortable: false, tdClass: "cell-actions", thClass: "th-actions" },
-    { label: "Tên mục tiêu", field: "target_name", sortable: true },
-    { label: "Đường dẫn", field: "target_url", sortable: true }
+    { label: "URL Path", field: "url_path", sortable: true }
 ]);
 
-// Fetch danh sách Target từ API
-const fetchTarget = async () => {
+// Fetch danh sách Blacklist từ API
+const fetchBlacklist = async () => {
     loadingBlack.value = true;
     try {
-        const response = await axios.get("/api/targets");
-        targetlist.value = response.data;
+        const response = await axios.get("/api/blacklists/black");
+        blacklist.value = response.data;
     } catch (error) {
-        console.error("Lỗi khi fetch Target:", error);
+        console.error("Lỗi khi fetch Blacklist:", error);
     }
     loadingBlack.value = false;
 };
 
-// Xóa mục khỏi Target
-const deleteFromTarget = async (id) => {
+// Thêm mục vào Blacklist
+const addToBlacklist = async () => {
+    if (!newUrl.value.trim()) {
+        $toast.warning("Vui lòng nhập URL!");
+        return;
+    }
     try {
-        await axios.delete(`/api/targets/${id}`);
+        await axios.post("/api/blacklists/black", { url_path: newUrl.value.trim(), type: "blacklist" });
+        $toast.success("Thêm thành công!");
+        newUrl.value = "";
+        await fetchBlacklist();
+    } catch (error) {
+        console.error("Lỗi khi thêm:", error);
+        $toast.error("Lỗi khi thêm vào Blacklist!");
+    }
+};
+
+// Xóa mục khỏi Blacklist
+const deleteFromBlacklist = async (id) => {
+    try {
+        await axios.delete(`/api/blacklists/black/${id}`);
         $toast.success("Xóa thành công!");
-        await fetchTarget();
+        await fetchBlacklist();
     } catch (error) {
         console.error("Lỗi khi xóa:", error);
         $toast.error("Lỗi khi xóa!");
     }
 };
 
-// Cập nhật mục trong Target
-const editTargetItem = (item) => {
+// Cập nhật mục trong Blacklist
+const editBlacklistItem = (item) => {
 	selectedRecord.value = { ...item };
-	isOpenUpdateModal.value = true;
+	isEditModalOpen.value = true;
 };
 
-// Cập nhật mục trong Target
-const openAddModal = () => {
-	isOpenAddModal.value = true;
-};
-
-const saveEditedTarget = async (updatedRecord) => {
+const saveEditedBlacklist = async (updatedRecord) => {
 	try {
-		await axios.put(`/api/targets/${updatedRecord._id}`, { url_path: updatedRecord.url_path });
+		await axios.put(`/api/blacklists/black/${updatedRecord._id}`, { url_path: updatedRecord.url_path });
 		$toast.success("Cập nhật thành công!");
-		await fetchTarget();
+		await fetchBlacklist();
 	} catch (error) {
 		console.error("Lỗi khi cập nhật:", error);
 		$toast.error("Lỗi khi cập nhật!");
@@ -69,17 +78,18 @@ const saveEditedTarget = async (updatedRecord) => {
 
 // Gọi API khi component được mount
 onMounted(async () => {
-    await fetchTarget();
+    await fetchBlacklist();
 });
 </script>
 
 <template>
     <section id="target_list">
-        <h5 class="sub-title">Danh sách mục tiêu</h5>
+        <h5 class="sub-title">🚫 Danh sách Blacklist</h5>
 
         <!-- Form Thêm Mục -->
         <div class="add-item">
-            <button class="btn btn-primary btn-sm" @click="openAddModal">Thêm</button>
+            <input v-model="newUrl" placeholder="Nhập URL..." @keyup.enter="addToBlacklist" />
+            <button class="btn btn-primary btn-sm" @click="addToBlacklist">Thêm</button>
         </div>
 
         <TableSkeleton v-if="loadingBlack"></TableSkeleton>
@@ -89,16 +99,16 @@ onMounted(async () => {
             v-show="!loadingBlack"
             :key="tableKey"
             :columns="columnsForTable"
-            :rows="targetlist"
+            :rows="blacklist"
             :pagination-options="{ enabled: false }"
         >
             <template #table-row="{ row, column }">
                 <template v-if="column.field === 'actions'">
                     <div class="text-center d-flex justify-content-center gap-2">
-                        <button class="btn btn-sm btn-warning btn-edit" @click="editTargetItem(row)">
+                        <button class="btn btn-sm btn-warning btn-edit" @click="editBlacklistItem(row)">
                             ✏️
                         </button>
-                        <button class="btn btn-sm btn-danger" @click="deleteFromTarget(row._id)">
+                        <button class="btn btn-sm btn-danger" @click="deleteFromBlacklist(row._id)">
                             🗑️
                         </button>
                     </div>
@@ -106,17 +116,11 @@ onMounted(async () => {
             </template>
         </vue-good-table>
 
-		<AddTargetListModal 
-			:isOpenAddModal="isOpenAddModal"
-			@add:isOpenAddModal="isOpenAddModal = $event"
-			@add="fetchTarget"
-		/>
-
-		<UpdateTargetListModal 
-			:isOpenUpdateModal="isOpenUpdateModal" 
+		<EditBlackListModal 
+			:isOpen="isEditModalOpen" 
 			:record="selectedRecord" 
-			@update:isOpenUpdateModal="isOpenUpdateModal = $event"
-			@save="fetchTarget"
+			@update:isOpen="isEditModalOpen = $event"
+			@save="saveEditedBlacklist"
 		/>
     </section>
 </template>

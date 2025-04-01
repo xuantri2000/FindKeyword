@@ -61,9 +61,21 @@ const columnsForTable = ref([
 const isEditModalOpen = ref(false);
 const selectedRecord = ref(null);
 const selectedStatus = ref("");
+const selectedTarget = ref("");
 const exporting = ref(false);
 const now = new Date();
 const pad = n => n.toString().padStart(2, '0');
+const targetlist = ref([]);
+
+// Fetch danh sách Target từ API
+const fetchTargets = async () => {
+    try {
+        const response = await axios.get("/api/targets");
+        targetlist.value = response.data;
+    } catch (error) {
+        console.error("Lỗi khi fetch Target:", error);
+    }
+};
 
 const fetchLogs = async (batch, query = "") => {
     if (loadedBatches.value.has(batch) && query === "" && !sortField.value && !selectedStatus.value) return true;
@@ -77,7 +89,8 @@ const fetchLogs = async (batch, query = "") => {
                 query,
                 sortField: sortField.value,
                 sortOrder: sortOrder.value,
-                status: selectedStatus.value // Gửi trạng thái lọc đến server
+                status: selectedStatus.value, // Gửi trạng thái lọc đến server
+				target: selectedTarget.value
             }
         });
 
@@ -111,7 +124,8 @@ const exportLogs = async () => {
                 query: searchQuery.value,
                 sortField: sortField.value,
                 sortOrder: sortOrder.value,
-                status: selectedStatus.value
+                status: selectedStatus.value,
+				target: selectedTarget.value
             },
             responseType: 'blob' // 👈 để nhận dạng file binary
         });
@@ -247,6 +261,7 @@ watch(searchQuery, handleSearch); // Lắng nghe sự thay đổi trong searchQu
 onMounted(async () => {
     await fetchLogs(1);
     updateDisplayRecords(1);
+	fetchTargets();
 });
 
 onUpdated(async () => {
@@ -275,6 +290,11 @@ onUpdated(async () => {
 						<option value="success">Thành công</option>
 						<option value="failure">Thất bại</option>
 						<option value="pending">Chưa đăng nhập</option>
+					</select>
+
+					<select v-model="selectedTarget" @change="handleFilterChange" class="status-filter">
+						<option value="">Tất cả</option>
+						<option v-for="target in targetlist" :key="target._id" :value="target.target_url">{{ target.target_name }}</option>
 					</select>
 
 					<!-- Nút Tải lại (chỉ có icon) -->

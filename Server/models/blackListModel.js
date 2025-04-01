@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const moment = require("moment-timezone");
 
-const listSchema = new mongoose.Schema({
+const blackListSchema = new mongoose.Schema({
     url_path: { type: String, required: true },
     type: { type: String, required: true },
     created_at: { 
@@ -10,5 +10,5 @@ const listSchema = new mongoose.Schema({
     }
 });
 
-const List = mongoose.model("List", listSchema);
-module.exports = List;
+const BlackList = mongoose.model("List", blackListSchema);
+module.exports = BlackList;

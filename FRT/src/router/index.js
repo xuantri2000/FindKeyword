@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomeView from '../views/HomeView.vue'
+import BlackListView from '../views/BlackListView.vue'
 import TargetListView from '../views/TargetListView.vue'
 
 const appName = 'Công cụ tìm kiếm tài khoản lộ lọt';
@@ -13,11 +14,17 @@ const router = createRouter({
 	  meta: { title: `Trang chủ | ${appName}` }
     },
     {
-      path: '/target_list',
-      name: 'target_list',
-      component: TargetListView,
-	  meta: { title: `Mục tiêu | ${appName}` }
+      path: '/black_list',
+      name: 'black_list',
+      component: BlackListView,
+	  meta: { title: `Danh sách đen | ${appName}` }
     },
+	{
+		path: '/target_list',
+		name: 'target_list',
+		component: TargetListView,
+		meta: { title: `Mục tiêu | ${appName}` }
+	  },
   ],
 })
 

@@ -7,7 +7,7 @@ const ExcelJS = require('exceljs');
 
 const Record = require("../models/recordModel");
 const Log = require("../models/logModel");
-const Target = require("../models/listModel");
+const BlackList = require("../models/blackListModel");
 
 router.post("/insert", async (req, res) => {
     try {
@@ -94,11 +94,11 @@ router.post("/insert", async (req, res) => {
 
 // Tách logic lọc và sắp xếp vào một hàm chung
 const buildFilterAndSort = async (req) => {
-    const { query, sortField, sortOrder, status } = req.query;
+    const { query, sortField, sortOrder, status, target } = req.query;
     const filter = {};
-
-    // Lấy danh sách URL trong Target để lọc
-    const targetUrls = await Target.find({}, 'url_path');
+	
+    // Lấy danh sách URL trong BlackList để lọc
+    const targetUrls = await BlackList.find({}, 'url_path');
     const blockedUrls = targetUrls.map(target => new RegExp(target.url_path, 'i'));
     filter.url_path = { $not: { $in: blockedUrls } };
 
@@ -115,6 +115,11 @@ const buildFilterAndSort = async (req) => {
     // Lọc theo trạng thái đăng nhập nếu có
     if (status) {
         filter.login_status = status;
+    }
+
+	// Lọc theo target nếu có
+    if (target) {
+        filter.url_path = { $regex: target, $options: 'i' };
     }
 
     // Sắp xếp theo trường và thứ tự
@@ -202,10 +207,10 @@ router.put("/update", async (req, res) => {
         const oldUrlPath = currentRecord.url_path;
 
         // Lấy danh sách URL trong Target để kiểm tra
-        const targetUrls = await Target.find({}, "url_path");
+        const targetUrls = await BlackList.find({}, "url_path");
         const blockedUrls = targetUrls.map(target => new RegExp(target.url_path, "i"));
 
-        // Nếu URL gần giống với Target thì không cập nhật
+        // Nếu URL gần giống với BlackList thì không cập nhật
         if (blockedUrls.some(regex => regex.test(updatedRecord.url_path))) {
             return res.status(403).json({ error: "Không thể cập nhật do URL thuộc danh sách hạn chế." });
         }

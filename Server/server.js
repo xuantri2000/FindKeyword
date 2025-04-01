@@ -6,7 +6,8 @@ require("dotenv").config();
 
 const recordRoutes = require("./routes/recordRoutes");
 const logRoutes = require("./routes/logRoutes");
-const targetRoutes = require("./routes/targetRoutes");
+const blackListRoutes = require("./routes/blackListRoutes");
+const targetListRoutes = require("./routes/targetListRoutes");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -27,7 +28,8 @@ mongoose.connect(MONGO_URI).then(() => {
 // Sử dụng routes
 app.use("/records", recordRoutes);
 app.use("/logs", logRoutes);
-app.use("/target", targetRoutes);
+app.use("/blacklists", blackListRoutes);
+app.use("/targets", targetListRoutes);
 
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);

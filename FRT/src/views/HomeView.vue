@@ -459,7 +459,7 @@ onUpdated(async () => {
 
 .search-input {
     width: 100%;
-    max-width: 300px;
+    max-width: 250px;
     padding: 8px 12px;
     border: 1px solid #ccc;
     border-radius: 8px;

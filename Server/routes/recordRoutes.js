@@ -92,46 +92,55 @@ router.post("/insert", async (req, res) => {
     }
 });
 
-router.get("/export", async (req, res) => {
+// Tách logic lọc và sắp xếp vào một hàm chung
+const buildFilterAndSort = async (req) => {
+    const { query, sortField, sortOrder, status } = req.query;
+    const filter = {};
+
+    // Lấy danh sách URL trong Target để lọc
+    const targetUrls = await Target.find({}, 'url_path');
+    const blockedUrls = targetUrls.map(target => new RegExp(target.url_path, 'i'));
+    filter.url_path = { $not: { $in: blockedUrls } };
+
+    // Tìm kiếm theo username hoặc url_path
+    if (query) {
+        const rawQuery = query.trim();
+        const escaped = rawQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        filter.$or = [
+            { username: { $regex: escaped, $options: 'i' } },
+            { url_path: { $regex: escaped, $options: 'i' } }
+        ];
+    }
+
+    // Lọc theo trạng thái đăng nhập nếu có
+    if (status) {
+        filter.login_status = status;
+    }
+
+    // Sắp xếp theo trường và thứ tự
+    let sort = { _id: -1 };
+    if (sortField && sortOrder) {
+        sort = { [sortField]: sortOrder === 'asc' ? 1 : -1 };
+    }
+
+    return { filter, sort };
+};
+
+// Cập nhật router
+router.get('/export', async (req, res) => {
     try {
-        const { query, sortField, sortOrder, status } = req.query;
-
-        const filter = {};
-
-		// Lấy danh sách URL trong Target để lọc
-		const targetUrls = await Target.find({}, "url_path");
-		const blockedUrls = targetUrls.map(target => new RegExp(target.url_path, "i"));
-        filter.url_path = { $not: { $in: blockedUrls } };
-
-        if (query) {
-			const rawQuery = query.trim();
-            const escaped = rawQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            filter.$or = [
-                { username: { $regex: escaped, $options: 'i' } },
-                { url_path: { $regex: escaped, $options: 'i' } }
-            ];
-        }
-
-        if (status) {
-            filter.login_status = status;
-        }
-
-        let sort = { _id: -1 };
-        if (sortField && sortOrder) {
-            sort = { [sortField]: sortOrder === 'asc' ? 1 : -1 };
-        }
-
-        const records = await Record.find(filter).sort(sort); // Giới hạn xuất log
+        const { filter, sort } = await buildFilterAndSort(req);
+        const records = await Record.find(filter).sort(sort);
 
         const workbook = new ExcelJS.Workbook();
-        const sheet = workbook.addWorksheet("Logs");
+        const sheet = workbook.addWorksheet('Logs');
 
         sheet.columns = [
-            { header: "Username", key: "username" },
-            { header: "Password", key: "password" },
-            { header: "URL Path", key: "url_path" },
-            { header: "Run Time", key: "run_time" },
-            { header: "Status", key: "login_status" },
+            { header: 'Username', key: 'username' },
+            { header: 'Password', key: 'password' },
+            { header: 'URL Path', key: 'url_path' },
+            { header: 'Run Time', key: 'run_time' },
+            { header: 'Status', key: 'login_status' },
         ];
 
         records.forEach(r => {
@@ -144,65 +153,24 @@ router.get("/export", async (req, res) => {
             });
         });
 
-        res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-        res.setHeader("Content-Disposition", "attachment; filename=logs_export.xlsx");
-
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', 'attachment; filename=logs_export.xlsx');
         await workbook.xlsx.write(res);
         res.end();
     } catch (err) {
-        res.status(500).json({ message: "Không thể xuất log, vui lòng liên hệ bé Vàng!" });
+        res.status(500).json({ message: 'Không thể xuất log, vui lòng liên hệ bé Vàng!' });
     }
 });
 
-router.get("/", async (req, res) => {
+router.get('/', async (req, res) => {
     try {
         const batch = parseInt(req.query.batch) || 1;
         const limit = parseInt(req.query.limit) || 1000;
-        const searchQuery = req.query.query ? req.query.query.trim() : "";
-        const sortField = req.query.sortField;
-        const sortOrder = req.query.sortOrder;
-        const status = req.query.status;
-
         const skip = (batch - 1) * limit;
 
-        let query = {};
-        let sort = { _id: -1 };
-
-        // Lấy danh sách URL trong Target để lọc
-        const targetUrls = await Target.find({}, "url_path");
-        const blockedUrls = targetUrls.map(target => new RegExp(target.url_path, "i")); // Regex để kiểm tra gần giống
-
-        // Lọc các record không nằm trong Target
-        query.url_path = { $not: { $in: blockedUrls } };
-
-        // Tìm kiếm theo username hoặc url_path
-        if (searchQuery) {
-            const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-            query.$or = [
-                { username: { $regex: escapedQuery, $options: "i" } },
-                { url_path: { $regex: escapedQuery, $options: "i" } }
-            ];
-        }
-
-        // Lọc theo trạng thái đăng nhập nếu có
-        if (status) {
-            query.login_status = status;
-        }
-
-        // Apply sorting nếu có
-        if (sortField && sortOrder) {
-            sort = {
-                [sortField]: sortOrder === 'asc' ? 1 : -1
-            };
-        }
-
-        // Fetch dữ liệu từ database
-        const records = await Record.find(query)
-            .sort(sort)
-            .skip(skip)
-            .limit(limit);
-
-        const totalRecords = await Record.countDocuments(query);
+        const { filter, sort } = await buildFilterAndSort(req);
+        const records = await Record.find(filter).sort(sort).skip(skip).limit(limit);
+        const totalRecords = await Record.countDocuments(filter);
 
         res.status(200).json({
             batch,
@@ -213,10 +181,9 @@ router.get("/", async (req, res) => {
             totalRecordsInCurrentBatch: records.length,
         });
     } catch (error) {
-        res.status(500).json({ error: "Error fetching records", details: error.message });
+        res.status(500).json({ error: 'Error fetching records', details: error.message });
     }
 });
-
 
 
 router.put("/update", async (req, res) => {

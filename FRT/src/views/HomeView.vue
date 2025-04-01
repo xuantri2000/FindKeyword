@@ -285,14 +285,14 @@ onUpdated(async () => {
 					/>
 
 					<!-- Bộ lọc trạng thái đăng nhập -->
-					<select v-model="selectedStatus" @change="handleFilterChange" class="status-filter">
+					<select v-model="selectedStatus" @change="handleFilterChange" class="status-filter status">
 						<option value="">Tất cả</option>
 						<option value="success">Thành công</option>
 						<option value="failure">Thất bại</option>
 						<option value="pending">Chưa đăng nhập</option>
 					</select>
 
-					<select v-model="selectedTarget" @change="handleFilterChange" class="status-filter">
+					<select v-model="selectedTarget" @change="handleFilterChange" class="status-filter target">
 						<option value="">Tất cả</option>
 						<option v-for="target in targetlist" :key="target._id" :value="target.target_url">{{ target.target_name }}</option>
 					</select>
@@ -484,7 +484,13 @@ onUpdated(async () => {
     appearance: none; /* Ẩn mũi tên mặc định của trình duyệt */
     position: relative;
     transition: all 0.3s ease-in-out;
+}
+
+.status-filter.status {
     width: 180px;
+}
+
+.status-filter.target {
 }
 
 /* Hiệu ứng hover & focus */

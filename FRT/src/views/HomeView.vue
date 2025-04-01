@@ -71,7 +71,7 @@ const targetlist = ref([]);
 const fetchTargets = async () => {
     try {
         const response = await axios.get("/api/targets");
-        targetlist.value = response.data;
+        targetlist.value = response.data.sort((a, b) => a.target_name.localeCompare(b.target_name));
     } catch (error) {
         console.error("Lỗi khi fetch Target:", error);
     }

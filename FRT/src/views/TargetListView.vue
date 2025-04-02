@@ -98,7 +98,16 @@ onMounted(async () => {
             :key="tableKey"
             :columns="columnsForTable"
             :rows="targetlist"
-            :pagination-options="{ enabled: false }"
+            :pagination-options="{
+				enabled: true,
+				perPage: 10,
+				nextLabel: 'Sau',
+				prevLabel: 'Trước',
+				rowsPerPageDropdown: [10, 20, 30, 50],
+				rowsPerPageLabel: 'Số bản ghi trên trang',
+				ofLabel: 'trên tổng',
+				pageLabel: 'Trang',
+			}"
         >
             <template #table-row="{ row, column }">
                 <template v-if="column.field === 'actions'">

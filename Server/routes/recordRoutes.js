@@ -135,7 +135,7 @@ const buildFilterAndSort = async (req) => {
 router.get('/export', async (req, res) => {
     try {
         const { filter, sort } = await buildFilterAndSort(req);
-        const records = await Record.find(filter).sort(sort);
+        const records = await Record.find(filter, 'username password url_path login_status').sort(sort);
 
         const workbook = new ExcelJS.Workbook();
         const sheet = workbook.addWorksheet('Logs');
@@ -144,8 +144,7 @@ router.get('/export', async (req, res) => {
             { header: 'Username', key: 'username' },
             { header: 'Password', key: 'password' },
             { header: 'URL Path', key: 'url_path' },
-            { header: 'Run Time', key: 'run_time' },
-            { header: 'Status', key: 'login_status' },
+            { header: 'Status', key: 'login_status' }
         ];
 
         records.forEach(r => {
@@ -153,7 +152,6 @@ router.get('/export', async (req, res) => {
                 username: r.username,
                 password: r.password,
                 url_path: r.url_path,
-                run_time: r.run_time,
                 login_status: r.login_status
             });
         });

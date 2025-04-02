@@ -455,6 +455,7 @@ onUpdated(async () => {
     /* align-items: center; */
     gap: 10px; /* Khoảng cách giữa input và filter */
     margin-bottom: 15px;
+	white-space: nowrap;
 }
 
 .search-input {
@@ -491,6 +492,7 @@ onUpdated(async () => {
 }
 
 .status-filter.target {
+	width: 250px;
 }
 
 /* Hiệu ứng hover & focus */

@@ -183,7 +183,7 @@ table.vgt-table .status-failure td{
 }
 
 .vgt-table th.filter-th {
-	padding: 0.75em 0.75em 0.75em 0.75em;
+	padding: 5px;
 }
 
 .vgt-table th.vgt-row-header {

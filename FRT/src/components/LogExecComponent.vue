@@ -131,7 +131,7 @@ onMounted(async () => {
 
 		<!-- Nút Tải lại (chỉ có icon) -->
 		<button class="reload-btn" @click="refreshLogs">
-			🔄
+			<fas-icon :icon="['fas', 'sync']" class="text-primary" />
 		</button>
 	</div>
 
@@ -143,7 +143,7 @@ onMounted(async () => {
 			:checked="checkAll" 
 			@change="handleCheckAll" 
 			id="checkAll" />
-			<label for="checkAll">📂 Chọn tất cả</label>
+			<label for="checkAll"><fas-icon :icon="['fas', 'folder-open']" class="text-warning" /> Chọn tất cả</label>
 		</div>
 
 		<ul class="directory-structure">
@@ -157,7 +157,7 @@ onMounted(async () => {
 		</ul>
 	</div>
 	<!-- Nút xử lý -->
-	<button class="process-btn" @click="handleProcessFiles">Xử lý tệp tin</button>
+	<button class="btn btn-success process-btn" @click="handleProcessFiles">Xử lý tệp tin</button>
 	<div v-if="failedFiles.length > 0">
 		<hr>
 		<!-- Hiển thị danh sách Log lỗi -->
@@ -293,7 +293,7 @@ onMounted(async () => {
 .process-btn {
     margin-top: 15px;
     padding: 10px 15px;
-    background-color: #28a745;
+    /* background-color: #28a745; */
     color: white;
     font-weight: bold;
     border: none;

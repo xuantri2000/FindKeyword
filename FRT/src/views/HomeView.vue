@@ -299,7 +299,7 @@ onUpdated(async () => {
 
 					<!-- Nút Tải lại (chỉ có icon) -->
 					<button class="reload-btn" @click="handleProcessComplete">
-						🔄
+						<fas-icon :icon="['fas', 'sync']" class="text-primary" />
 					</button>
 
 					<div style="flex-grow: 1;"></div>

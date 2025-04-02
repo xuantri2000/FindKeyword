@@ -15,7 +15,12 @@ const selectedRecord = ref(null);
 // Cấu hình cột cho Vue Good Table
 const columnsForTable = ref([
     { label: "", field: "actions", sortable: false, tdClass: "cell-actions", thClass: "th-actions" },
-    { label: "URL Path", field: "url_path", sortable: true }
+    { label: "URL Path", field: "url_path", sortable: true, filterOptions: {
+		styleClass: 'class1',
+		enabled: true,
+		placeholder: 'Tìm kiếm theo URL Path',
+		}
+	},
 ]);
 
 // Fetch danh sách Blacklist từ API
@@ -84,12 +89,12 @@ onMounted(async () => {
 
 <template>
     <section id="target_list">
-        <h5 class="sub-title">🚫 Danh sách Blacklist</h5>
+        <h5 class="sub-title"><fas-icon :icon="['fas', 'ban']" class="text-danger" /> Danh sách Blacklist</h5>
 
         <!-- Form Thêm Mục -->
         <div class="add-item">
             <input v-model="newUrl" placeholder="Nhập URL..." @keyup.enter="addToBlacklist" />
-            <button class="btn btn-primary btn-sm" @click="addToBlacklist">Thêm</button>
+            <button class="btn btn-primary" @click="addToBlacklist"><fas-icon :icon="['fas', 'add']"/></button>
         </div>
 
         <TableSkeleton v-if="loadingBlack"></TableSkeleton>
@@ -101,15 +106,16 @@ onMounted(async () => {
             :columns="columnsForTable"
             :rows="blacklist"
             :pagination-options="{ enabled: false }"
+			:filter-options="{ enabled: true, placeholder: 'Filter' }"
         >
             <template #table-row="{ row, column }">
                 <template v-if="column.field === 'actions'">
                     <div class="text-center d-flex justify-content-center gap-2">
                         <button class="btn btn-sm btn-warning btn-edit" @click="editBlacklistItem(row)">
-                            ✏️
+                            <fas-icon :icon="['fas', 'edit']" class="white-icon" />
                         </button>
                         <button class="btn btn-sm btn-danger" @click="deleteFromBlacklist(row._id)">
-                            🗑️
+                            <fas-icon :icon="['fas', 'trash']" />
                         </button>
                     </div>
                 </template>
@@ -151,8 +157,8 @@ onMounted(async () => {
 
 /* Nút hành động */
 .btn-sm {
-    padding: 6px 10px;
-    font-size: 14px;
+    padding: 8px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;

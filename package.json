@@ -1,0 +1,9 @@
+{
+	"scripts": {
+		"dev": "concurrently \"cd FRT && npm run dev\" \"cd Server && npm run dev\"",
+		"production": "concurrently \"cd FRT && npm run production\" \"cd Server && npm run dev\""
+	},
+	"devDependencies": {
+		"concurrently": "^9.1.2"
+	}
+}

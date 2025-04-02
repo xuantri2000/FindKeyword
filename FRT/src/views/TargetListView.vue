@@ -17,8 +17,16 @@ const selectedRecord = ref(null);
 // Cấu hình cột cho Vue Good Table
 const columnsForTable = ref([
     { label: "", field: "actions", sortable: false, tdClass: "cell-actions", thClass: "th-actions" },
-    { label: "Tên mục tiêu", field: "target_name", sortable: true },
-    { label: "Đường dẫn", field: "target_url", sortable: true }
+    { label: "Tên mục tiêu", field: "target_name", sortable: true, filterOptions: {
+		styleClass: 'class1',
+		enabled: true,
+		placeholder: 'Tìm kiếm theo tên mục tiêu',
+	} },
+    { label: "Đường dẫn", field: "target_url", sortable: true, filterOptions: {
+		styleClass: 'class2',
+		enabled: true,
+		placeholder: 'Tìm kiếm theo đường dẫn',
+	} }
 ]);
 
 // Fetch danh sách Target từ API
@@ -79,7 +87,7 @@ onMounted(async () => {
 
         <!-- Form Thêm Mục -->
         <div class="add-item">
-            <button class="btn btn-primary btn-sm" @click="openAddModal">Thêm</button>
+            <button class="btn btn-primary" @click="openAddModal"><fas-icon :icon="['fas', 'add']"/></button>
         </div>
 
         <TableSkeleton v-if="loadingBlack"></TableSkeleton>
@@ -96,10 +104,10 @@ onMounted(async () => {
                 <template v-if="column.field === 'actions'">
                     <div class="text-center d-flex justify-content-center gap-2">
                         <button class="btn btn-sm btn-warning btn-edit" @click="editTargetItem(row)">
-                            ✏️
+                            <fas-icon :icon="['fas', 'edit']" class="white-icon" />
                         </button>
                         <button class="btn btn-sm btn-danger" @click="deleteFromTarget(row._id)">
-                            🗑️
+                            <fas-icon :icon="['fas', 'trash']" />
                         </button>
                     </div>
                 </template>
@@ -147,8 +155,8 @@ onMounted(async () => {
 
 /* Nút hành động */
 .btn-sm {
-    padding: 6px 10px;
-    font-size: 14px;
+    padding: 8px;
+    font-size: 16px;
     display: flex;
     align-items: center;
     justify-content: center;

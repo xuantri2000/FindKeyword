@@ -83,7 +83,7 @@ onMounted(async () => {
 
 <template>
     <section id="target_list">
-        <h5 class="sub-title">Danh sách mục tiêu</h5>
+        <h5 class="sub-title"><fas-icon :icon="['fas', 'bullseye']" class="me-2"/>Danh sách mục tiêu</h5>
 
         <!-- Form Thêm Mục -->
         <div class="add-item">

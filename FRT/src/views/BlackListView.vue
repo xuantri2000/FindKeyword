@@ -93,7 +93,7 @@ onMounted(async () => {
 
         <!-- Form Thêm Mục -->
         <div class="add-item">
-            <input v-model="newUrl" placeholder="Nhập URL..." @keyup.enter="addToBlacklist" />
+            <input v-model="newUrl" placeholder="Nhập URL cần thêm..." @keyup.enter="addToBlacklist" />
             <button class="btn btn-primary" @click="addToBlacklist"><fas-icon :icon="['fas', 'add']"/></button>
         </div>
 

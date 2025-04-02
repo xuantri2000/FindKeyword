@@ -273,7 +273,7 @@ onUpdated(async () => {
     <section id="homeview">
         <div class="row">
             <div class="col-md-9">
-                <h5 class="sub-title">Tìm kiếm tài khoản lộ lọt</h5>
+                <h5 class="sub-title"><fas-icon :icon="['fas', 'search']" class="me-2"/>Tìm kiếm tài khoản lộ lọt</h5>
 
                 <!-- 🔍 Thanh tìm kiếm -->
                 <div class="search-filter-container">

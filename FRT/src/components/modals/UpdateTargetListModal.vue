@@ -72,16 +72,20 @@ const saveChanges = async () => {
 		return;
 	}
 	try {
-		await axios.put(`/api/targets/${props.record._id}`, {
+		const response = await axios.put(`/api/targets/${props.record._id}`, {
 			target_name: addName.value,
 			target_url: addUrl.value
 		});
-		$toast.success("Cập nhật thành công!");
+		$toast.success(response.data.message);
 		emit('save');
 		closeModal();
 	} catch (error) {
-		$toast.error("Lỗi khi cập nhật mục tiêu!");
-		console.error(error);
+		if (error.response && error.response.data && error.response.data.message) {
+			$toast.error(error.response.data.message);
+		} else {
+			// Lỗi không xác định
+			$toast.error("Lỗi không xác định. Vui lòng liên hệ bé Vàng!");
+		}
 	}
 };
 </script>

@@ -80,12 +80,17 @@ const saveChanges = async () => {
 
 	try {
 		const response = await axios.post('/api/targets', { target_name: addName.value, target_url: addUrl.value, parent_id });
-		$toast.success("Thêm thành công!");
+		$toast.success(response.data.message);
 		resetForm();
 		emit('add', true);
 		closeModal();
 	} catch (error) {
-		$toast.error("Vui lòng liên hệ bé Vàng!");
+		if (error.response && error.response.data && error.response.data.message) {
+			$toast.error(error.response.data.message);
+		} else {
+			// Lỗi không xác định
+			$toast.error("Lỗi không xác định. Vui lòng liên hệ bé Vàng!");
+		}
 	}
 };
 

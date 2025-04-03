@@ -7,7 +7,7 @@ import AddTargetListModal from "@/components/modals/AddTargetListModal.vue";
 import UpdateTargetListModal from "@/components/modals/UpdateTargetListModal.vue";
 
 const targetlist = ref([]);
-const loadingBlack = ref(false);
+const loadingTarget = ref(false);
 const newUrl = ref("");
 const tableKey = ref(0);
 const isOpenAddModal = ref(false);
@@ -39,14 +39,14 @@ const columnsForTable = ref([
 
 // Fetch danh sách Target từ API
 const fetchTarget = async () => {
-    loadingBlack.value = true;
+    loadingTarget.value = true;
     try {
         const response = await axios.get("/api/targets");
         targetlist.value = response.data;
     } catch (error) {
         console.error("Lỗi khi fetch Target:", error);
     }
-    loadingBlack.value = false;
+    loadingTarget.value = false;
 };
 
 // Xử lý khi nhấn nút xóa
@@ -64,13 +64,17 @@ const openDeleteModal = (item) => {
 // Xóa mục khỏi Target
 const deleteFromTarget = async () => {
     try {
-        await axios.delete(`/api/targets/${deleteTargetId.value}`);
-        $toast.success("Xóa thành công!");
+        const response = await axios.delete(`/api/targets/${deleteTargetId.value}`);
+        $toast.success(response.data.message);
         await fetchTarget();
         closeDeleteModal();
     } catch (error) {
-        console.error("Lỗi khi xóa:", error);
-        $toast.error("Lỗi khi xóa!");
+		if (error.response && error.response.data && error.response.data.message) {
+			$toast.error(error.response.data.message);
+		} else {
+			// Lỗi không xác định
+			$toast.error("Lỗi không xác định. Vui lòng liên hệ bé Vàng!");
+		}
     }
 };
 
@@ -107,11 +111,11 @@ onMounted(async () => {
             <button class="btn btn-primary" @click="openAddModal"><fas-icon :icon="['fas', 'add']"/></button>
         </div>
 
-        <TableSkeleton v-if="loadingBlack"></TableSkeleton>
+        <TableSkeleton v-if="loadingTarget"></TableSkeleton>
 
         <!-- Vue Good Table -->
         <vue-good-table
-            v-show="!loadingBlack"
+            v-show="!loadingTarget"
             :key="tableKey"
             :columns="columnsForTable"
             :rows="targetlist"

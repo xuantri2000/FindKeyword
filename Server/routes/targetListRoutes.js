@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { handleValidationError } = require("../utils/ExceptionCatch");
 const Target = require("../models/targetListModel");
 
 // 📌 Lấy danh sách Targetlist với thông tin Parent
@@ -37,7 +38,7 @@ router.get("/", async (req, res) => {
 
         res.status(200).json(targetList);
     } catch (error) {
-        res.status(500).json({ error: "Lỗi khi lấy danh sách Target!" });
+        res.status(500).json({ message: "Lỗi khi lấy danh sách mục tiêu!" });
     }
 });
 
@@ -51,7 +52,7 @@ router.get("/countries", async (req, res) => {
         );
         res.status(200).json(targetList);
     } catch (error) {
-        res.status(500).json({ error: "Lỗi khi lấy danh sách Target!" });
+        res.status(500).json({ message: "Lỗi khi lấy danh sách mục tiêu cấp Quốc gia!" });
     }
 });
 
@@ -64,7 +65,7 @@ router.get("/targets", async (req, res) => {
         });
         res.status(200).json(targetList);
     } catch (error) {
-        res.status(500).json({ error: "Lỗi khi lấy danh sách Target!" });
+        res.status(500).json({ message: "Lỗi khi lấy danh sách mục tiêu con!" });
     }
 });
 
@@ -77,9 +78,9 @@ router.post("/", async (req, res) => {
         }
         const newEntry = new Target({ target_name, target_url, parent_id});
         await newEntry.save();
-        res.status(201).json({ message: "Thêm vào Targetlist thành công!", data: newEntry });
+        res.status(201).json({ message: "Thêm mục tiêu mới thành công!", data: newEntry });
     } catch (error) {
-        res.status(500).json({ error: "Lỗi khi thêm vào Targetlist!" });
+        res.status(500).json({ message: handleValidationError(error) });
     }
 });
 
@@ -88,9 +89,9 @@ router.put("/:id", async (req, res) => {
     try {
         const { target_name, target_url } = req.body;
         await Target.findByIdAndUpdate(req.params.id, { target_name, target_url });
-        res.status(200).json({ message: "Cập nhật thành công!" });
+        res.status(200).json({ message: "Cập nhật mục tiêu thành công!" });
     } catch (error) {
-        res.status(500).json({ error: "Lỗi khi cập nhật Targetlist!" });
+        res.status(500).json({ message: "Lỗi khi cập nhật mục tiêu!" });
     }
 });
 
@@ -98,9 +99,9 @@ router.put("/:id", async (req, res) => {
 router.delete("/:id", async (req, res) => {
     try {
         await Target.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: "Xóa thành công!" });
+        res.status(200).json({ message: "Xóa mục tiêu thành công!" });
     } catch (error) {
-        res.status(500).json({ error: "Lỗi khi xóa khỏi Targetlist!" });
+        res.status(500).json({ message: "Lỗi khi xóa mục tiêu!" });
     }
 });
 

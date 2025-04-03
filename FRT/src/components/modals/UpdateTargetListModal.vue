@@ -57,7 +57,13 @@ watch(() => props.record, (newRecord) => {
 }, { immediate: true, deep: true });
 
 const closeModal = () => {
-	emit('update:isOpenUpdateModal', false);
+	const modalOverlay = document.querySelector('.modal-overlay');
+	modalOverlay.classList.remove('animate__fadeIn');
+	modalOverlay.classList.add('animate__fadeOut');
+
+	setTimeout(() => {
+		emit('update:isOpenUpdateModal', false);
+	}, 300);
 };
 
 const saveChanges = async () => {
@@ -81,22 +87,5 @@ const saveChanges = async () => {
 </script>
 
 <style scoped>
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-.modal-container {
-  background: white;
-  padding: 20px;
-  border-radius: 8px;
-  width: 400px;
-}
+
 </style>

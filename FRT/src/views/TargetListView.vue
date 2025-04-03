@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onUpdated } from "vue";
+import { ref, onMounted } from "vue";
 import axios from "axios";
 import $toast from "@/utils/VueToast";
 import TableSkeleton from "@/components/ui/TableSkeleton.vue";
@@ -9,10 +9,13 @@ import UpdateTargetListModal from "@/components/modals/UpdateTargetListModal.vue
 const targetlist = ref([]);
 const loadingBlack = ref(false);
 const newUrl = ref("");
-const tableKey = ref(0); // Thay đổi để cập nhật lại table
+const tableKey = ref(0);
 const isOpenAddModal = ref(false);
 const isOpenUpdateModal = ref(false);
 const selectedRecord = ref(null);
+const isOpenDeleteModal = ref(false); // Thêm biến quản lý modal xóa
+const deleteTargetId = ref(null); // ID của mục tiêu muốn xóa
+const deleteMessage = ref("");
 
 // Cấu hình cột cho Vue Good Table
 const columnsForTable = ref([
@@ -26,6 +29,11 @@ const columnsForTable = ref([
 		styleClass: 'class2',
 		enabled: true,
 		placeholder: 'Tìm kiếm theo đường dẫn',
+	} },
+	{ label: "Phân cấp", field: "parent", sortable: true, filterOptions: {
+		styleClass: 'class3',
+		enabled: true,
+		placeholder: 'Tìm kiếm theo phân cấp',
 	} }
 ]);
 
@@ -41,38 +49,46 @@ const fetchTarget = async () => {
     loadingBlack.value = false;
 };
 
+// Xử lý khi nhấn nút xóa
+const openDeleteModal = (item) => {
+    deleteTargetId.value = item._id;
+    // Kiểm tra phân cấp để hiển thị thông báo phù hợp
+    if (item.parent === "Cấp quốc gia") {
+		deleteMessage.value = `Bạn đang xóa mục tiêu <span class="text-danger">Cấp quốc gia</span>, vui lòng kiểm tra lại các mục tiêu con trước khi xóa!`;
+    } else {
+        deleteMessage.value = "Vui lòng kiểm tra lại mục tiêu trước khi xóa!";
+    }
+    isOpenDeleteModal.value = true;
+};
+
 // Xóa mục khỏi Target
-const deleteFromTarget = async (id) => {
+const deleteFromTarget = async () => {
     try {
-        await axios.delete(`/api/targets/${id}`);
+        await axios.delete(`/api/targets/${deleteTargetId.value}`);
         $toast.success("Xóa thành công!");
         await fetchTarget();
+        closeDeleteModal();
     } catch (error) {
         console.error("Lỗi khi xóa:", error);
         $toast.error("Lỗi khi xóa!");
     }
 };
 
+// Đóng modal xóa
+const closeDeleteModal = () => {
+    isOpenDeleteModal.value = false;
+    deleteTargetId.value = null;
+};
+
 // Cập nhật mục trong Target
 const editTargetItem = (item) => {
-	selectedRecord.value = { ...item };
-	isOpenUpdateModal.value = true;
+    selectedRecord.value = { ...item };
+    isOpenUpdateModal.value = true;
 };
 
-// Cập nhật mục trong Target
+// Mở modal thêm
 const openAddModal = () => {
-	isOpenAddModal.value = true;
-};
-
-const saveEditedTarget = async (updatedRecord) => {
-	try {
-		await axios.put(`/api/targets/${updatedRecord._id}`, { url_path: updatedRecord.url_path });
-		$toast.success("Cập nhật thành công!");
-		await fetchTarget();
-	} catch (error) {
-		console.error("Lỗi khi cập nhật:", error);
-		$toast.error("Lỗi khi cập nhật!");
-	}
+    isOpenAddModal.value = true;
 };
 
 // Gọi API khi component được mount
@@ -80,6 +96,7 @@ onMounted(async () => {
     await fetchTarget();
 });
 </script>
+
 
 <template>
     <section id="target_list">
@@ -99,15 +116,15 @@ onMounted(async () => {
             :columns="columnsForTable"
             :rows="targetlist"
             :pagination-options="{
-				enabled: true,
-				perPage: 10,
-				nextLabel: 'Sau',
-				prevLabel: 'Trước',
-				rowsPerPageDropdown: [10, 20, 30, 50],
-				rowsPerPageLabel: 'Số bản ghi trên trang',
-				ofLabel: 'trên tổng',
-				pageLabel: 'Trang',
-			}"
+                enabled: true,
+                perPage: 10,
+                nextLabel: 'Sau',
+                prevLabel: 'Trước',
+                rowsPerPageDropdown: [10, 20, 30, 50],
+                rowsPerPageLabel: 'Số bản ghi trên trang',
+                ofLabel: 'trên tổng',
+                pageLabel: 'Trang',
+            }"
         >
             <template #table-row="{ row, column }">
                 <template v-if="column.field === 'actions'">
@@ -115,7 +132,7 @@ onMounted(async () => {
                         <button class="btn btn-sm btn-warning btn-edit" @click="editTargetItem(row)">
                             <fas-icon :icon="['fas', 'edit']" class="white-icon" />
                         </button>
-                        <button class="btn btn-sm btn-danger" @click="deleteFromTarget(row._id)">
+                        <button class="btn btn-sm btn-danger" @click="openDeleteModal(row)">
                             <fas-icon :icon="['fas', 'trash']" />
                         </button>
                     </div>
@@ -123,20 +140,35 @@ onMounted(async () => {
             </template>
         </vue-good-table>
 
-		<AddTargetListModal 
-			:isOpenAddModal="isOpenAddModal"
-			@add:isOpenAddModal="isOpenAddModal = $event"
-			@add="fetchTarget"
-		/>
+        <!-- Modal Xác nhận Xóa -->
+        <div v-if="isOpenDeleteModal" class="modal-overlay animate__animated animate__fadeIn">
+            <div class="modal-container">
+                <h4><fas-icon :icon="['fas', 'warning']"/> Xác nhận xóa?</h4>
+				<p v-html="deleteMessage"></p>
+                <div class="modal-footer">
+                    <button @click="closeDeleteModal" class="btn btn-secondary me-2">Hủy</button>
+                    <button @click="deleteFromTarget" class="btn btn-danger">OK</button>
+                </div>
+            </div>
+        </div>
 
-		<UpdateTargetListModal 
-			:isOpenUpdateModal="isOpenUpdateModal" 
-			:record="selectedRecord" 
-			@update:isOpenUpdateModal="isOpenUpdateModal = $event"
-			@save="fetchTarget"
-		/>
+        <!-- Modal Thêm Mục tiêu -->
+        <AddTargetListModal 
+            :isOpenAddModal="isOpenAddModal"
+            @add:isOpenAddModal="isOpenAddModal = $event"
+            @add="fetchTarget"
+        />
+
+        <!-- Modal Cập nhật Mục tiêu -->
+        <UpdateTargetListModal 
+            :isOpenUpdateModal="isOpenUpdateModal" 
+            :record="selectedRecord" 
+            @update:isOpenUpdateModal="isOpenUpdateModal = $event"
+            @save="fetchTarget"
+        />
     </section>
 </template>
+
 
 <style scoped>
 /* 🔍 Search & Add */

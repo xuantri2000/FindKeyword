@@ -1,38 +1,47 @@
 <template>
 	<div v-if="isOpenAddModal" class="modal-overlay animate__animated animate__fadeIn">
-	  <div class="modal-container animate__animated">
+		<div class="modal-container animate__animated">
 		<div class="modal-header border-bottom">
-		  <h5 class="modal-title fw-bold">Thêm mục tiêu</h5>
-		  <button @click="closeModal" class="btn-close close hover-shake" aria-label="Close"></button>
+			<h5 class="modal-title fw-bold">Thêm mục tiêu</h5>
+			<button @click="closeModal" class="btn-close close hover-shake" aria-label="Close"></button>
 		</div>
 		<div class="modal-body py-4">
-		  <div class="form-group fade-in mb-2" style="animation-delay: 0.1s">
+			<!-- Tên mục tiêu -->
+			<div class="form-group fade-in mb-2" style="animation-delay: 0.15s">
 			<label class="form-label mb-0">Tên mục tiêu</label>
 			<input v-model="addName" 
-			  type="text" 
-			  class="form-control hover-effect" 
-			  placeholder="Nhập tên mục tiêu">
-		  </div>
-		  <div class="form-group fade-in" style="animation-delay: 0.2s">
+				type="text" 
+				class="form-control hover-effect" 
+				placeholder="Nhập tên mục tiêu">
+			</div>
+			<!-- URL -->
+			<div class="form-group fade-in mb-2" style="animation-delay: 0.2s">
 			<label class="form-label mb-0">URL</label>
 			<textarea v-model="addUrl" 
-			  type="text" 
-			  class="form-control hover-effect" 
-			  placeholder="Nhập URL">
+				type="text" 
+				class="form-control hover-effect" 
+				placeholder="Nhập URL">
 			</textarea> 
-		  </div>
+			</div>
+			<!-- Chọn đơn vị cha -->
+			<div class="form-group fade-in mb-2" style="animation-delay: 0.1s">
+				<label class="form-label mb-0">Chọn phân cấp</label>
+				<select v-model="selectedParent" class="form-control hover-effect">
+					<option value="" selected>Cấp Quốc gia</option>
+					<option v-for="parent in parentTargetList" :key="parent._id" :value="parent._id">
+					{{ parent.target_name }}
+					</option>
+				</select>
+			</div>
 		</div>
 		<div class="modal-footer">
-		  <button @click="closeModal" class="btn btn-secondary hover-effect me-1">
-			Hủy
-		  </button>
-		  <button @click="saveChanges" class="btn btn-primary pulse-effect">
-			Lưu
-		  </button>
+			<button @click="closeModal" class="btn btn-secondary hover-effect me-1">Hủy</button>
+			<button @click="saveChanges" class="btn btn-primary pulse-effect">Lưu</button>
 		</div>
-	  </div>
+		</div>
 	</div>
 </template>
+
 
 <script setup>
 import { ref, watch } from 'vue';
@@ -47,6 +56,8 @@ const emit = defineEmits(['add:isOpenAddModal', 'add']);
 
 const addName = ref("");
 const addUrl = ref("");
+const parentTargetList = ref([]);
+const selectedParent = ref("");
 
 const closeModal = () => {
 	const modalOverlay = document.querySelector('.modal-overlay');
@@ -55,6 +66,7 @@ const closeModal = () => {
 
 	setTimeout(() => {
 		emit('add:isOpenAddModal', false);
+		resetForm();
 	}, 300);
 };
 
@@ -63,57 +75,45 @@ const saveChanges = async () => {
 		$toast.warning("Tên mục tiêu và URL không được để trống!")
 		return;
 	}
+
+	const parent_id = selectedParent.value ? selectedParent.value : null;
+
 	try {
-		const response = await axios.post('/api/targets', { target_name: addName.value, target_url: addUrl.value });
+		const response = await axios.post('/api/targets', { target_name: addName.value, target_url: addUrl.value, parent_id });
 		$toast.success("Thêm thành công!");
-		addName.value = "";
-		addUrl.value = "";
+		resetForm();
 		emit('add', true);
 		closeModal();
 	} catch (error) {
-		$toast.error(error);
+		$toast.error("Vui lòng liên hệ bé Vàng!");
+	}
+};
+
+const resetForm = () => {
+	addName.value = "";
+	addUrl.value = "";
+	selectedParent.value = "";
+}
+
+// Watch để tự động gọi hàm khi mở modal
+watch(() => props.isOpenAddModal, (newVal) => {
+	if (newVal) {
+		fetchParentTarget();
+	}
+});
+
+// Fetch danh sách Target từ API
+const fetchParentTarget = async () => {
+	try {
+		const response = await axios.get("/api/targets/countries");
+		parentTargetList.value = response.data;
+	} catch (error) {
+		console.error("Lỗi khi fetch Target:", error);
 	}
 };
 
 </script>
 
 <style scoped>
-.fade-in {
-  opacity: 0;
-  animation: fadeIn 0.5s ease forwards;
-}
-.animate__fadeIn {
-  animation: fadeIn 0.5s;
-}
-.animate__fadeOut {
-  animation: fadeOut 0.5s;
-}
-.btn-close:focus {
-  box-shadow: none;
-  outline: none;
-}
-.modal-header {
-  justify-content: space-between;
-}
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(2px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1050;
-}
 
-.modal-container {
-  background: white;
-  padding: 20px;
-  border-radius: 12px;
-  width: 500px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
 </style>

@@ -112,7 +112,8 @@ body {
 			color: #fff;
 		}
 
-		.navbar:not(:hover) &:focus,
+		// .navbar:not(:hover) &:focus,
+		.navbar:not(:hover),
 		&:hover {
 			span {
 				opacity: 1;

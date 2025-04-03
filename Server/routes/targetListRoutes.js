@@ -35,10 +35,14 @@ router.get("/", async (req, res) => {
                                 ]
                             }
                         ]
+                    },
+                    isNationalLevel: { 
+                        $cond: { if: { $eq: ["$parent_id", null] }, then: 1, else: 0 }  // Đánh dấu cấp quốc gia
                     }
                 }
             },
-            { $project: { parent_info: 0 } }  // Loại bỏ trường tạm
+            { $sort: { isNationalLevel: -1, target_name: 1 } },  // Sắp xếp cấp quốc gia lên đầu và theo tên
+            { $project: { parent_info: 0, isNationalLevel: 0 } }  // Loại bỏ trường tạm
         ]);
 
         res.status(200).json(targetList);

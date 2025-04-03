@@ -201,6 +201,13 @@ const handleParentTargetChange = async () => {
 	}
 	else
 	{
+		const selectElement = document.querySelector(".status-filter.target");
+		if (selectElement) {
+			selectElement.classList.add("blink-red");
+			setTimeout(() => {
+				selectElement.classList.remove("blink-red");
+			}, 2000);
+		}
 		await fetchTargets();
 	}
 };
@@ -345,8 +352,8 @@ onUpdated(async () => {
 						<option v-for="target in parentTargetList" :key="target._id" :value="target._id">{{ target.target_name }}</option>
 					</select>
 
-					<select v-model="selectedTarget" @change="handleFilterChange" class="status-filter target">
-						<option value="">Chọn mục tiêu</option>
+					<select v-show="selectedParentTarget" v-model="selectedTarget" @change="handleFilterChange" class="status-filter target">
+						<!-- <option value="">Chọn mục tiêu</option> -->
 						<option v-for="target in targetlist" :key="target._id" :value="target.target_url">{{ target.target_name }}</option>
 					</select>
 				</div>
@@ -486,6 +493,7 @@ onUpdated(async () => {
 /* 🔍 Search Bar */
 .search-filter-container {
     display: flex;
+	height: fit-content;
     flex-wrap: wrap;
     gap: 10px; /* Khoảng cách giữa input và filter */
     margin-bottom: 15px;

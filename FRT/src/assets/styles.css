@@ -68,3 +68,18 @@
 	width: 500px;
 	box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
+
+@keyframes blinkRed {
+    0%, 100% {
+        border-color: #198754;
+        box-shadow: 0 0 5px #198754;
+    }
+    50% {
+        border-color: #fff;
+        box-shadow: 0 0 5px transparent;
+    }
+}
+
+.blink-red {
+    animation: blinkRed 1s ease-in-out 3; /* Nháy 4 lần (2 giây) */
+}

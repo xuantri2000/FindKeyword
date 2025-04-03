@@ -131,6 +131,11 @@ onMounted(async () => {
             }"
         >
             <template #table-row="{ row, column }">
+				<template v-if="column.field === 'parent'">
+					<span :class="{'text-danger': row.parent === 'Cấp quốc gia'}">
+						{{ row.parent }}
+					</span>
+				</template>
                 <template v-if="column.field === 'actions'">
                     <div class="text-center d-flex justify-content-center gap-2">
                         <button class="btn btn-sm btn-warning btn-edit" @click="editTargetItem(row)">

@@ -108,7 +108,7 @@ onMounted(async () => {
 
         <!-- Form Thêm Mục -->
         <div class="add-item">
-            <button class="btn btn-primary" @click="openAddModal"><fas-icon :icon="['fas', 'add']"/></button>
+            <button class="btn btn-primary" @click="openAddModal">Thêm mới <fas-icon :icon="['fas', 'add']"/></button>
         </div>
 
         <TableSkeleton v-if="loadingTarget"></TableSkeleton>

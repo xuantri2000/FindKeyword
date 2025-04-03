@@ -18,18 +18,23 @@ router.get("/", async (req, res) => {
             {
                 $addFields: {
                     parent: {
-                        $cond: {
-                            if: { $gt: [{ $size: "$parent_info" }, 0] },  // Kiểm tra nếu có parent
-                            then: {
-                                $concat: [
-                                    { $arrayElemAt: ["$parent_info.target_name", 0] },
-                                    " (",
-                                    { $arrayElemAt: ["$parent_info.target_url", 0] },
-                                    ")"
+                        $cond: [
+                            { $eq: ["$parent_id", null] }, "Cấp quốc gia",  // Trường hợp parent_id = null
+                            {
+                                $cond: [
+                                    { $gt: [{ $size: "$parent_info" }, 0] },  // Nếu có parent
+                                    {
+                                        $concat: [
+                                            { $arrayElemAt: ["$parent_info.target_name", 0] },
+                                            " (",
+                                            { $arrayElemAt: ["$parent_info.target_url", 0] },
+                                            ")"
+                                        ]
+                                    },
+                                    ""  // Trường hợp không tồn tại
                                 ]
-                            },
-                            else: "Cấp quốc gia"  // Nếu không có parent
-                        }
+                            }
+                        ]
                     }
                 }
             },
@@ -38,10 +43,10 @@ router.get("/", async (req, res) => {
 
         res.status(200).json(targetList);
     } catch (error) {
+        console.error("Lỗi khi lấy danh sách mục tiêu:", error.message);
         res.status(500).json({ message: "Lỗi khi lấy danh sách mục tiêu!" });
     }
 });
-
 
 // 📌 Lấy danh sách Target cấp quốc gia (loại trừ ID nếu có)
 router.get("/countries", async (req, res) => {
@@ -50,7 +55,7 @@ router.get("/countries", async (req, res) => {
 
         // Tạo bộ lọc để loại trừ ID nếu có
         const filter = { 
-            $or: [{ parent_id: null }, { parent_id: { $exists: false } }]
+            $or: [{ parent_id: null }]
         };
         if (excludeId) {
             filter._id = { $ne: excludeId };
@@ -65,13 +70,18 @@ router.get("/countries", async (req, res) => {
     }
 });
 
-// 📌 Lấy danh sách Targetlist
+// 📌 Lấy danh sách Targetlist theo parent_id
 router.get("/targets", async (req, res) => {
     try {
-        // Lấy các Target có parent_id khác null
-        const targetList = await Target.find({ 
-            parent_id: { $exists: true, $ne: null } 
-        });
+        const { parent_id } = req.query;
+
+        let query = { parent_id: { $exists: true, $ne: null } };
+        // Nếu có parent_id, thêm điều kiện lọc
+        if (parent_id) {
+            query = { parent_id };
+        }
+
+        const targetList = await Target.find(query);
         res.status(200).json(targetList);
     } catch (error) {
         res.status(500).json({ message: "Lỗi khi lấy danh sách mục tiêu con!" });

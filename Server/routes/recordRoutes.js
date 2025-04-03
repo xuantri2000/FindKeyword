@@ -8,6 +8,7 @@ const ExcelJS = require('exceljs');
 const Record = require("../models/recordModel");
 const Log = require("../models/logModel");
 const BlackList = require("../models/blackListModel");
+const Target = require("../models/targetListModel");
 
 router.post("/insert", async (req, res) => {
     try {
@@ -94,7 +95,7 @@ router.post("/insert", async (req, res) => {
 
 // Tách logic lọc và sắp xếp vào một hàm chung
 const buildFilterAndSort = async (req) => {
-    const { query, sortField, sortOrder, status, target } = req.query;
+    const { query, sortField, sortOrder, status, target, parentId } = req.query;
     const filter = {};
 	
     // Lấy danh sách URL trong BlackList để lọc
@@ -121,6 +122,19 @@ const buildFilterAndSort = async (req) => {
     if (target) {
         filter.url_path = { $regex: target, $options: 'i' };
     }
+
+	// Nếu có parentId thì lấy target_url của parent để lọc
+	// if (parentId) {
+	// 	try {
+	// 		const parentTarget = await Target.findById(parentId, 'target_url');
+	// 		if (parentTarget && parentTarget.target_url) {
+	// 			const parentUrl = parentTarget.target_url;
+	// 			console.log(parentUrl)
+	// 			filter.url_path = { $regex: parentUrl, $options: 'i' };
+	// 		}
+	// 	} catch (error) {
+	// 	}
+	// }
 
     // Sắp xếp theo trường và thứ tự
     let sort = { _id: -1 };

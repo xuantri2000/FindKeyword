@@ -62,15 +62,32 @@ const isEditModalOpen = ref(false);
 const selectedRecord = ref(null);
 const selectedStatus = ref("");
 const selectedTarget = ref("");
+const selectedParentTarget = ref("");
 const exporting = ref(false);
 const now = new Date();
 const pad = n => n.toString().padStart(2, '0');
+const parentTargetList = ref([]);
 const targetlist = ref([]);
+
+// Fetch danh sách Target từ API
+const fetchParentTargets = async () => {
+    try {
+        const response = await axios.get("/api/targets/countries");
+        parentTargetList.value = response.data.sort((a, b) => a.target_name.localeCompare(b.target_name));
+    } catch (error) {
+        console.error("Lỗi khi fetch Target:", error);
+    }
+};
 
 // Fetch danh sách Target từ API
 const fetchTargets = async () => {
     try {
-        const response = await axios.get("/api/targets");
+        const params = {};
+        if (selectedParentTarget.value) {
+            params.parent_id = selectedParentTarget.value;
+        }
+
+        const response = await axios.get("/api/targets/targets", { params });
         targetlist.value = response.data.sort((a, b) => a.target_name.localeCompare(b.target_name));
     } catch (error) {
         console.error("Lỗi khi fetch Target:", error);
@@ -90,7 +107,8 @@ const fetchLogs = async (batch, query = "") => {
                 sortField: sortField.value,
                 sortOrder: sortOrder.value,
                 status: selectedStatus.value, // Gửi trạng thái lọc đến server
-				target: selectedTarget.value
+				target: selectedTarget.value,
+				parentId: selectedParentTarget.value
             }
         });
 
@@ -172,6 +190,19 @@ const handleFilterChange = async () => {
     records.value = [];
     await fetchLogs(1, searchQuery.value);
     updateDisplayRecords(1);
+};
+
+const handleParentTargetChange = async () => {
+	if(selectedParentTarget.value == "")
+	{
+		targetlist.value = [];
+		selectedTarget.value = "";
+		handleFilterChange();
+	}
+	else
+	{
+		await fetchTargets();
+	}
 };
 
 const updateDisplayRecords = (pageNumber) => {
@@ -261,7 +292,7 @@ watch(searchQuery, handleSearch); // Lắng nghe sự thay đổi trong searchQu
 onMounted(async () => {
     await fetchLogs(1);
     updateDisplayRecords(1);
-	fetchTargets();
+	fetchParentTargets();
 });
 
 onUpdated(async () => {
@@ -286,24 +317,17 @@ onUpdated(async () => {
 
 					<!-- Bộ lọc trạng thái đăng nhập -->
 					<select v-model="selectedStatus" @change="handleFilterChange" class="status-filter status">
-						<option value="">Tất cả</option>
+						<option value="">Chọn trạng thái</option>
 						<option value="success">Thành công</option>
 						<option value="failure">Thất bại</option>
 						<option value="pending">Chưa đăng nhập</option>
 					</select>
 
-					<select v-model="selectedTarget" @change="handleFilterChange" class="status-filter target">
-						<option value="">Tất cả</option>
-						<option v-for="target in targetlist" :key="target._id" :value="target.target_url">{{ target.target_name }}</option>
-					</select>
-
+					<div style="flex-grow: 1;"></div>
 					<!-- Nút Tải lại (chỉ có icon) -->
 					<button class="reload-btn" @click="handleProcessComplete">
 						<fas-icon :icon="['fas', 'sync']" class="text-primary" />
 					</button>
-
-					<div style="flex-grow: 1;"></div>
-
 					<!-- Nút Tải lại (chỉ có icon) -->
 					<button class="btn btn-success" @click="exportLogs" :disabled="exporting">
 						<span v-if="exporting">
@@ -315,7 +339,17 @@ onUpdated(async () => {
 						</span>
 					</button>
 				</div>
+				<div class="search-filter-container">
+					<select v-model="selectedParentTarget" @change="handleParentTargetChange" class="status-filter parent-target">
+						<option value="">Chọn quốc gia</option>
+						<option v-for="target in parentTargetList" :key="target._id" :value="target._id">{{ target.target_name }}</option>
+					</select>
 
+					<select v-model="selectedTarget" @change="handleFilterChange" class="status-filter target">
+						<option value="">Chọn mục tiêu</option>
+						<option v-for="target in targetlist" :key="target._id" :value="target.target_url">{{ target.target_name }}</option>
+					</select>
+				</div>
                 <TableSkeleton v-show="loading"></TableSkeleton>
                 <vue-good-table
                     v-show="!loading"
@@ -452,7 +486,7 @@ onUpdated(async () => {
 /* 🔍 Search Bar */
 .search-filter-container {
     display: flex;
-    /* align-items: center; */
+    flex-wrap: wrap;
     gap: 10px; /* Khoảng cách giữa input và filter */
     margin-bottom: 15px;
 	white-space: nowrap;
@@ -460,7 +494,7 @@ onUpdated(async () => {
 
 .search-input {
     width: 100%;
-    max-width: 250px;
+    max-width: 400px;
     padding: 8px 12px;
     border: 1px solid #ccc;
     border-radius: 8px;
@@ -488,11 +522,15 @@ onUpdated(async () => {
 }
 
 .status-filter.status {
-    width: 180px;
+    width: 200px;
 }
 
 .status-filter.target {
-	width: 250px;
+	min-width: 300px;
+}
+
+.status-filter.parent-target {
+	min-width: 180px;
 }
 
 /* Hiệu ứng hover & focus */

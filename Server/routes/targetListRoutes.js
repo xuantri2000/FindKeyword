@@ -43,16 +43,25 @@ router.get("/", async (req, res) => {
 });
 
 
+// 📌 Lấy danh sách Target cấp quốc gia (loại trừ ID nếu có)
 router.get("/countries", async (req, res) => {
     try {
-        // Lấy các Target có parent_id là null hoặc không tồn tại, chỉ lấy 3 trường
-        const targetList = await Target.find(
-            { $or: [{ parent_id: null }, { parent_id: { $exists: false } }] },
-            '_id target_name target_url'  // Chỉ chọn các trường cần thiết
-        );
+        const { excludeId } = req.query;
+
+        // Tạo bộ lọc để loại trừ ID nếu có
+        const filter = { 
+            $or: [{ parent_id: null }, { parent_id: { $exists: false } }]
+        };
+        if (excludeId) {
+            filter._id = { $ne: excludeId };
+        }
+
+        // Truy vấn danh sách các mục tiêu cấp quốc gia
+        const targetList = await Target.find(filter, "_id target_name target_url");
         res.status(200).json(targetList);
     } catch (error) {
-        res.status(500).json({ message: "Lỗi khi lấy danh sách mục tiêu cấp Quốc gia!" });
+        console.error("Lỗi khi lấy danh sách mục tiêu cấp quốc gia:", error.message);
+        res.status(500).json({ message: "Lỗi khi lấy danh sách mục tiêu cấp quốc gia!" });
     }
 });
 
@@ -87,20 +96,32 @@ router.post("/", async (req, res) => {
 // 📌 Cập nhật mục trong Targetlist
 router.put("/:id", async (req, res) => {
     try {
-        const { target_name, target_url } = req.body;
-        await Target.findByIdAndUpdate(req.params.id, { target_name, target_url });
+        const { target_name, target_url, parent_id } = req.body;
+        await Target.findByIdAndUpdate(req.params.id, { target_name, target_url, parent_id });
         res.status(200).json({ message: "Cập nhật mục tiêu thành công!" });
     } catch (error) {
         res.status(500).json({ message: "Lỗi khi cập nhật mục tiêu!" });
     }
 });
 
-// 📌 Xóa khỏi Targetlist
 router.delete("/:id", async (req, res) => {
     try {
-        await Target.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: "Xóa mục tiêu thành công!" });
+        const { id } = req.params;
+
+        // Tìm và xóa mục tiêu chính
+        const deletedTarget = await Target.findByIdAndDelete(id);
+        if (!deletedTarget) {
+            return res.status(404).json({ message: "Mục tiêu không tồn tại hoặc đã bị xóa!" });
+        }
+
+        // Tìm và xóa các mục tiêu con có parent_id bằng với ID đã xóa
+        const deletedChildren = await Target.deleteMany({ parent_id: id });
+
+        res.status(200).json({ 
+            message: `Xóa mục tiêu và ${deletedChildren.deletedCount} mục tiêu con thành công!`,
+        });
     } catch (error) {
+        console.error("Lỗi khi xóa mục tiêu:", error.message);
         res.status(500).json({ message: "Lỗi khi xóa mục tiêu!" });
     }
 });

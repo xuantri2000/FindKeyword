@@ -21,6 +21,16 @@
 			  placeholder="Nhập URL">
 			</textarea> 
 		  </div>
+			<!-- Chọn đơn vị cha -->
+			<div v-if="!isNationalLevel" class="form-group fade-in mb-2" style="animation-delay: 0.1s">
+				<label class="form-label mb-0">Chọn phân cấp</label>
+				<select v-model="selectedParent" class="form-control hover-effect">
+					<option value="" selected>Cấp Quốc gia</option>
+					<option v-for="parent in parentTargetList" :key="parent._id" :value="parent._id">
+					{{ parent.target_name }}
+					</option>
+				</select>
+			</div>
 		</div>
 		<div class="modal-footer">
 		  <button @click="closeModal" class="btn btn-secondary hover-effect me-1">
@@ -48,13 +58,47 @@ const emit = defineEmits(['update:isOpenUpdateModal', 'save']);
 
 const addName = ref("");
 const addUrl = ref("");
+const parentTargetList = ref([]);
+const selectedParent = ref("");
+const isNationalLevel = ref(false);
+
+watch(() => props.isOpenUpdateModal, (newVal) => {
+	if (newVal) {
+		checkNationalLevel();
+		if (!isNationalLevel.value) {
+			fetchParentTarget();
+		}
+	}
+});
 
 watch(() => props.record, (newRecord) => {
 	if (newRecord) {
 		addName.value = newRecord.target_name;
 		addUrl.value = newRecord.target_url;
+
+		const parent_id = newRecord.parent_id ? newRecord.parent_id : "";
+		selectedParent.value = parent_id;
 	}
 }, { immediate: true, deep: true });
+
+// Kiểm tra nếu mục tiêu là cấp quốc gia
+const checkNationalLevel = () => {
+	if (props.record && props.record.parent === "Cấp quốc gia") {
+		isNationalLevel.value = true;
+	} else {
+		isNationalLevel.value = false;
+	}
+};
+
+// Fetch danh sách Target từ API
+const fetchParentTarget = async () => {
+	try {
+		const response = await axios.get(`/api/targets/countries?excludeId=${props.record._id}`);
+		parentTargetList.value = response.data;
+	} catch (error) {
+		console.error("Lỗi khi fetch Target:", error);
+	}
+};
 
 const closeModal = () => {
 	const modalOverlay = document.querySelector('.modal-overlay');
@@ -71,10 +115,14 @@ const saveChanges = async () => {
 		$toast.warning("Tên mục tiêu và URL không được để trống!");
 		return;
 	}
+
+	const parent_id = selectedParent.value ? selectedParent.value : null;
+
 	try {
 		const response = await axios.put(`/api/targets/${props.record._id}`, {
 			target_name: addName.value,
-			target_url: addUrl.value
+			target_url: addUrl.value,
+			parent_id
 		});
 		$toast.success(response.data.message);
 		emit('save');

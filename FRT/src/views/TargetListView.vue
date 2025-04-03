@@ -54,7 +54,7 @@ const openDeleteModal = (item) => {
     deleteTargetId.value = item._id;
     // Kiểm tra phân cấp để hiển thị thông báo phù hợp
     if (item.parent === "Cấp quốc gia") {
-		deleteMessage.value = `Bạn đang xóa mục tiêu <span class="text-danger">Cấp quốc gia</span>, vui lòng kiểm tra lại các mục tiêu con trước khi xóa!`;
+		deleteMessage.value = `Bạn đang xóa mục tiêu <span class="text-danger">Cấp quốc gia</span>, vui lòng kiểm tra lại các mục tiêu con trước khi xóa, nếu vẫn tiếp tục, các mục tiêu con sẽ bị xóa theo!`;
     } else {
         deleteMessage.value = "Vui lòng kiểm tra lại mục tiêu trước khi xóa!";
     }

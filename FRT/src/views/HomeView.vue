@@ -318,7 +318,7 @@ onUpdated(async () => {
 					<input 
 						type="text" 
 						v-model="searchQuery" 
-						placeholder="Nhập username hoặc URL..."
+						placeholder="Nhập username hoặc URL...."
 						class="search-input"
 					/>
 

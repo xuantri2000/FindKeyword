@@ -229,7 +229,8 @@ router.put("/update", async (req, res) => {
 
         const updateData = {
             url_path: updatedRecord.url_path,
-            login_status: updatedRecord.login_status
+            login_status: updatedRecord.login_status,
+            note: updatedRecord.note,
         };
 
         // Cập nhật record hiện tại

@@ -124,24 +124,23 @@ const buildFilterAndSort = async (req) => {
     }
 
 	// Nếu có parentId thì lấy target_url của parent để lọc
-	// if (parentId) {
-	// 	try {
-	// 		const parentTarget = await Target.findById(parentId, 'target_url');
-	// 		if (parentTarget && parentTarget.target_url) {
-	// 			const parentUrl = parentTarget.target_url;
-	// 			console.log(parentUrl)
-	// 			filter.url_path = { $regex: parentUrl, $options: 'i' };
-	// 		}
-	// 	} catch (error) {
-	// 	}
-	// }
+	if (parentId) {
+		try {
+			const parentTarget = await Target.findById(parentId, 'target_url');
+			if (parentTarget && parentTarget.target_url) {
+				const parentUrl = parentTarget.target_url;
+				filter.country = parentUrl;
+			}
+		} catch (error) {
+		}
+	}
 
     // Sắp xếp theo trường và thứ tự
     let sort = { _id: -1 };
     if (sortField && sortOrder) {
         sort = { [sortField]: sortOrder === 'asc' ? 1 : -1 };
     }
-
+	console.log(filter);
     return { filter, sort };
 };
 

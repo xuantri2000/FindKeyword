@@ -203,8 +203,6 @@ const handleParentTargetChange = async () => {
 	if(selectedParentTarget.value == "")
 	{
 		targetlist.value = [];
-		selectedTarget.value = "";
-		handleFilterChange();
 	}
 	else
 	{
@@ -217,6 +215,8 @@ const handleParentTargetChange = async () => {
 		}
 		await fetchTargets();
 	}
+	selectedTarget.value = "";
+	handleFilterChange();
 };
 
 const updateDisplayRecords = (pageNumber) => {

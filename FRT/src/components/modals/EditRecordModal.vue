@@ -47,6 +47,16 @@
 			  <label for="pending" class="form-check-label ms-1">Chưa đăng nhập</label>
 			</div>
 		  </div>
+		  <hr>
+		  <div class="form-group mb-1 fade-in" style="animation-delay: 0.5s">
+			<label class="form-label">Ghi chú</label>
+			<textarea
+			  v-model="editedRecord.note" 
+			  type="text" 
+			  rows="5"
+			  class="form-control hover-effect">
+			</textarea>
+		  </div>
 		</div>
 		<div class="modal-footer">
 		  <button @click="closeModal" class="btn btn-secondary hover-effect me-1">

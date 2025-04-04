@@ -51,6 +51,13 @@ const columnsForTable = ref([
 		thClass: 'th-custom'
 	},
 	{ 
+		label: 'Ghi chú', 
+		field: 'note', 
+		sortable: false,
+		tdClass: 'cell-wrap',
+		thClass: 'th-custom'
+	},
+	{ 
 		label: 'Thời gian', 
 		field: 'run_time', 
 		sortable: false,

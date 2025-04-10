@@ -183,29 +183,6 @@ onMounted(async () => {
 	</div>
 </template>
 <style scoped>
-.sub-title{
-	margin-bottom: 0px;
-}
-.log-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.reload-btn {
-    background: transparent; /* Không có nền */
-    color: white; /* Icon màu trắng */
-    border: none; /* Không có viền */
-    font-size: 18px; /* Tăng kích thước icon */
-    cursor: pointer;
-    transition: transform 0.2s ease-in-out;
-    padding: 5px; /* Tạo khoảng cách click dễ hơn */
-}
-
-.reload-btn:hover {
-    transform: rotate(90deg); /* Xoay nhẹ khi hover */
-}
 
 
 /* Layout tổng thể */
@@ -213,7 +190,7 @@ onMounted(async () => {
 .file-list {
     overflow-y: auto;
     max-height: 50vh;
-    margin-top: 10px;
+    /* margin-top: 10px; */
     background: #ffffff;
     padding: 15px;
     border-radius: 12px;

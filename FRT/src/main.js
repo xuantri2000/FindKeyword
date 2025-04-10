@@ -6,10 +6,10 @@ import { VueGoodTable } from 'vue-good-table-next';
 // Import Font Awesome
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { faAdd, faEdit, faTrash, faBan, faSync, faRedo, faFolderOpen, faFolder, faSearch, faBullseye, faWarning } from '@fortawesome/free-solid-svg-icons';
+import { faAdd, faEdit, faTrash, faBan, faSync, faRedo, faFolderOpen, faFolder, faSearch, faBullseye, faWarning, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 // Thêm các icon vào thư viện
-library.add(faEdit, faTrash, faBan, faSync, faRedo, faFolderOpen, faFolder, faAdd, faSearch, faBullseye, faWarning);
+library.add(faEdit, faTrash, faBan, faSync, faRedo, faFolderOpen, faFolder, faAdd, faSearch, faBullseye, faWarning, faTimes);
 
 import { createApp } from 'vue';
 import App from './App.vue';

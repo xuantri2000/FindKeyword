@@ -3,6 +3,7 @@ import { ref, computed, onMounted, watch, onUpdated } from "vue";
 import axios from "axios";
 import $toast from "@/utils/VueToast";
 import LogExecComponent from "@/components/LogExecComponent.vue";
+import SelectRowComponent from "@/components/SelectRowComponent.vue";
 import TableSkeleton from "@/components/ui/TableSkeleton.vue";
 import CustomPagination from "@/components/ui/CustomPagination.vue";
 import feather from 'feather-icons';
@@ -24,6 +25,12 @@ const searchTimer = ref(null);
 const sortField = ref("");
 const sortOrder = ref(""); // "asc" or "desc"
 const columnsForTable = ref([
+	{ 
+        label: '', 
+        field: 'select-box', 
+        sortable: false,
+        thClass: 'select-box'
+    },
 	{ 
         label: '', 
         field: 'actions', 
@@ -295,10 +302,19 @@ const handleSaveRecord = async (updatedRecord) => {
     }
 };
 
-
-
 const getRowStyleClass = (row) => {
 	return `status-${row.login_status}`
+}
+
+//Chọn nhiều select để chuyển trạng thái
+const selectedRows = ref(new Map());
+function toggleCheckbox(id, username) {
+    if (selectedRows.value.has(id)) {
+        selectedRows.value.delete(id);
+    } else {
+        selectedRows.value.set(id, username);
+    }
+	console.log(selectedRows)
 }
 
 watch(searchQuery, handleSearch); // Lắng nghe sự thay đổi trong searchQuery
@@ -380,7 +396,7 @@ onUpdated(async () => {
                     }"
                 >
 				<template #table-column="{ column }">
-					<div v-if="column.field !== 'actions'" class="th-wrapper">
+					<div v-if="column.field !== 'actions' && column.field !== 'select-box'" class="th-wrapper">
 						<span>{{ column.label }}</span>
 						<div class="sort-buttons">
 							<button 
@@ -408,6 +424,14 @@ onUpdated(async () => {
 						<i data-feather="edit"></i>
 					</button>
 				</div>
+				<div v-if="column.field === 'select-box'" class="form-check d-flex justify-content-center align-items-center">
+					<input
+					class="form-check-input"
+					type="checkbox"
+					:checked="selectedRows.has(row._id)"
+					@change="toggleCheckbox(row._id, row.username)"
+					/>
+				</div>
 				</template>
 
 				<template #pagination-bottom>
@@ -421,6 +445,11 @@ onUpdated(async () => {
                 </vue-good-table>
             </div>
             <div class="col-md-3">
+				<transition name="slide-down">
+					<div v-if="selectedRows.size > 0">
+						<SelectRowComponent :selected-rows="selectedRows" @clear-selected="selectedRows.clear()" />
+					</div>
+				</transition>
                 <LogExecComponent @process-complete="handleProcessComplete"/>
             </div>
         </div>

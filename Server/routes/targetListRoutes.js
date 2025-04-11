@@ -107,16 +107,27 @@ router.post("/", async (req, res) => {
     }
 });
 
-// 📌 Cập nhật mục trong Targetlist
 router.put("/:id", async (req, res) => {
     try {
-        const { target_name, target_url, parent_id } = req.body;
-        await Target.findByIdAndUpdate(req.params.id, { target_name, target_url, parent_id });
+        let { target_name, target_url, parent_id } = req.body;
+
+        // Trim các giá trị nếu có
+        target_name = target_name?.trim() || "";
+        target_url = target_url?.trim() || "";
+
+        await Target.findByIdAndUpdate(req.params.id, {
+            target_name,
+            target_url,
+            parent_id
+        });
+
         res.status(200).json({ message: "Cập nhật mục tiêu thành công!" });
     } catch (error) {
+		console.log(error)
         res.status(500).json({ message: "Lỗi khi cập nhật mục tiêu!" });
     }
 });
+
 
 router.delete("/:id", async (req, res) => {
     try {

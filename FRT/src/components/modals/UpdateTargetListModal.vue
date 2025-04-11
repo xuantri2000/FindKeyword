@@ -120,8 +120,8 @@ const saveChanges = async () => {
 
 	try {
 		const response = await axios.put(`/api/targets/${props.record._id}`, {
-			target_name: addName.value,
-			target_url: addUrl.value,
+			target_name: addName.value.trim(),
+			target_url: addUrl.value.trim(),
 			parent_id
 		});
 		$toast.success(response.data.message);

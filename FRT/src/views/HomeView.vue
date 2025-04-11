@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed, onMounted, watch, onUpdated } from "vue";
+import ClipboardJS from 'clipboard';
+import { ref, computed, onMounted, watch, onUpdated, onBeforeUnmount } from "vue";
 import axios from "axios";
 import $toast from "@/utils/VueToast";
 import LogExecComponent from "@/components/LogExecComponent.vue";
@@ -319,25 +320,20 @@ function toggleCheckbox(id, username) {
 }
 
 //Clipboard
-const copyRecord = (row) => {
-  // Lấy danh sách giá trị từ object row và nối lại bằng dấu :
-  const rowString = [row.username, row.password, row.url_path].join("|");
+let clipboard = null;
 
-  // Tạo clipboard
-  navigator.clipboard.writeText(rowString)
-    .then(() => {
-      $toast.success("Đã sao chép thông tin bản ghi!");
-    })
-    .catch((err) => {
-      console.error("Lỗi khi sao chép:", err);
-      $toast.error("Không thể sao chép nội dung.");
-    });
+const getRowString = (row) => {
+  return [row.username?.trim() || "", row.password?.trim() || "", row.url_path?.trim() || ""].join("|");
 };
 
 
 watch(searchQuery, handleSearch); // Lắng nghe sự thay đổi trong searchQuery
 
 onMounted(async () => {
+	clipboard = new ClipboardJS('[id^=copy-]');
+	clipboard.on('success', () => $toast.success("Sao chép thành công!"));
+	clipboard.on('error', () => $toast.error("Đã có lỗi xảy ra khi sao chép!"));
+
     await fetchLogs(1);
     updateDisplayRecords(1);
 	fetchParentTargets();
@@ -438,7 +434,11 @@ onUpdated(async () => {
 				<!-- Custom cell cho cột Actions -->
 				<template #table-row="{ row, column }">
 				<div v-if="column.field === 'actions'" class="text-center d-flex justify-content-center">
-					<button class="btn btn-info btn-sm d-flex align-items-center gap-2 btn-edit me-1" @click="copyRecord(row)">
+					<button
+						class="btn btn-info btn-sm btn-edit me-1"
+						:data-clipboard-text="getRowString(row)"
+						:id="`copy-${row._id}`"
+						>
 						<i data-feather="clipboard"></i>
 					</button>
 					<button class="btn btn-warning btn-sm d-flex align-items-center gap-2 btn-edit" @click="editRecord(row)">

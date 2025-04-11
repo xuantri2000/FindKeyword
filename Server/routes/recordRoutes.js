@@ -54,6 +54,7 @@ router.post("/insert", async (req, res) => {
                                     filename: filename,
                                     run_time: record.run_time,
                                     log_resource: record.filename,
+                                    country: record.country,
                                 },
                             },
                             upsert: true,

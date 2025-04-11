@@ -148,3 +148,7 @@
 .reload-btn:hover {
     transform: rotate(90deg); /* Xoay nhẹ khi hover */
 }
+
+.clickable-row{
+	cursor: pointer;
+}

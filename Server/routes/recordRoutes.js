@@ -140,7 +140,7 @@ const buildFilterAndSort = async (req) => {
     if (sortField && sortOrder) {
         sort = { [sortField]: sortOrder === 'asc' ? 1 : -1 };
     }
-	console.log(filter);
+	// console.log(filter);
     return { filter, sort };
 };
 
@@ -273,7 +273,43 @@ router.put("/update", async (req, res) => {
     }
 });
 
+router.put("/batch/status", async (req, res) => {
+    try {
+        const { ids, login_status, note } = req.body;
 
+        if (!Array.isArray(ids) || ids.length === 0 || !login_status) {
+            return res.status(400).json({ error: "Thiếu danh sách ID hoặc trạng thái cập nhật không hợp lệ." });
+        }
+
+        // Lọc các ID trùng nhau và loại null/undefined
+        const uniqueIds = [...new Set(ids)].filter(id => id);
+
+		const updateFields = { login_status, note };
+
+        const updateResult = await Record.updateMany(
+            { _id: { $in: uniqueIds } },
+            { $set: updateFields }
+        );
+
+        if (updateResult.modifiedCount === 0) {
+            return res.status(200).json({
+                message: "Không có bản ghi nào được cập nhật.",
+                updatedCount: 0
+            });
+        }
+
+        return res.status(200).json({
+            message: `Đã cập nhật trạng thái cho ${updateResult.modifiedCount} tài khoản.`,
+            updatedCount: updateResult.modifiedCount
+        });
+    } catch (error) {
+        console.error("Lỗi khi cập nhật trạng thái hàng loạt:", error);
+        res.status(500).json({
+            error: "Đã xảy ra lỗi khi cập nhật trạng thái!",
+            details: error.message
+        });
+    }
+});
 
 
 module.exports = router;

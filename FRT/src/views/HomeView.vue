@@ -82,6 +82,7 @@ const now = new Date();
 const pad = n => n.toString().padStart(2, '0');
 const parentTargetList = ref([]);
 const targetlist = ref([]);
+const selectedRows = ref(new Map());
 
 // Fetch danh sách Target từ API
 const fetchParentTargets = async () => {
@@ -250,6 +251,7 @@ const handleProcessComplete = async () => {
     currentPage.value = 1;
     tableKey.value += 1;
     loadedBatches.value.clear();
+	selectedRows.value.clear();
     await fetchLogs(1, searchQuery.value);
     updateDisplayRecords(1);
 };
@@ -307,14 +309,13 @@ const getRowStyleClass = (row) => {
 }
 
 //Chọn nhiều select để chuyển trạng thái
-const selectedRows = ref(new Map());
 function toggleCheckbox(id, username) {
     if (selectedRows.value.has(id)) {
         selectedRows.value.delete(id);
     } else {
         selectedRows.value.set(id, username);
     }
-	console.log(selectedRows)
+	// console.log(selectedRows)
 }
 
 watch(searchQuery, handleSearch); // Lắng nghe sự thay đổi trong searchQuery
@@ -432,6 +433,14 @@ onUpdated(async () => {
 					@change="toggleCheckbox(row._id, row.username)"
 					/>
 				</div>
+				<div
+					v-else
+					@click="toggleCheckbox(row._id, row.username)"
+					class="clickable-row w-100 h-100 d-flex align-items-center px-2"
+					:class="{ 'row-selected': selectedRows.has(row._id) }"
+				>
+					{{ row[column.field] }}
+				</div>
 				</template>
 
 				<template #pagination-bottom>
@@ -447,7 +456,7 @@ onUpdated(async () => {
             <div class="col-md-3">
 				<transition name="slide-down">
 					<div v-if="selectedRows.size > 0">
-						<SelectRowComponent :selected-rows="selectedRows" @clear-selected="selectedRows.clear()" />
+						<SelectRowComponent :selected-rows="selectedRows" @clear-selected="selectedRows.clear()" @reload="handleProcessComplete" />
 					</div>
 				</transition>
                 <LogExecComponent @process-complete="handleProcessComplete"/>

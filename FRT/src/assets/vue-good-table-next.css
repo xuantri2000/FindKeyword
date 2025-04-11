@@ -75,6 +75,7 @@ table.vgt-table td {
 	/* vertical-align: top; */
 	border-bottom: 1px solid #DCDFE6;
 	color: #606266;
+	user-select: none;
 }
 
 table.vgt-table td.url-path {

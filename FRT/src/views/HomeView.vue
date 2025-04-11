@@ -318,6 +318,23 @@ function toggleCheckbox(id, username) {
 	// console.log(selectedRows)
 }
 
+//Clipboard
+const copyRecord = (row) => {
+  // Lấy danh sách giá trị từ object row và nối lại bằng dấu :
+  const rowString = [row.username, row.password, row.url_path].join("|");
+
+  // Tạo clipboard
+  navigator.clipboard.writeText(rowString)
+    .then(() => {
+      $toast.success("Đã sao chép thông tin bản ghi!");
+    })
+    .catch((err) => {
+      console.error("Lỗi khi sao chép:", err);
+      $toast.error("Không thể sao chép nội dung.");
+    });
+};
+
+
 watch(searchQuery, handleSearch); // Lắng nghe sự thay đổi trong searchQuery
 
 onMounted(async () => {
@@ -421,6 +438,9 @@ onUpdated(async () => {
 				<!-- Custom cell cho cột Actions -->
 				<template #table-row="{ row, column }">
 				<div v-if="column.field === 'actions'" class="text-center d-flex justify-content-center">
+					<button class="btn btn-info btn-sm d-flex align-items-center gap-2 btn-edit me-1" @click="copyRecord(row)">
+						<i data-feather="clipboard"></i>
+					</button>
 					<button class="btn btn-warning btn-sm d-flex align-items-center gap-2 btn-edit" @click="editRecord(row)">
 						<i data-feather="edit"></i>
 					</button>
